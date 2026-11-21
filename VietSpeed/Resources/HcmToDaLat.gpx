@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="VietSpeed" xmlns="http://www.topografix.com/GPX/1/1">
+    <wpt lat="10.7832" lon="106.7450">
+        <name>1. Xuất phát: Mai Chí Thọ (TP.HCM)</name>
+    </wpt>
+    <wpt lat="10.7656" lon="106.9546">
+        <name>2. Cao tốc TP.HCM - Long Thành</name>
+    </wpt>
+    <wpt lat="10.7656" lon="106.9592">
+        <name>3. Cầu vượt nút giao QL.51</name>
+    </wpt>
+    <wpt lat="10.9200" lon="107.1400">
+        <name>4. Nút giao Dầu Giây (Đoạn kết nối QL20)</name>
+    </wpt>
+    <wpt lat="11.2050" lon="107.3500">
+        <name>5. QL20 qua Định Quán (Khu dân cư)</name>
+    </wpt>
+    <wpt lat="11.3800" lon="107.4800">
+        <name>6. QL20 Tân Phú (Ngoài đô thị)</name>
+    </wpt>
+    <wpt lat="11.4560" lon="107.7178">
+        <name>7. Đèo Bảo Lộc (Lâm Đồng)</name>
+    </wpt>
+    <wpt lat="11.5460" lon="107.8080">
+        <name>8. TP. Bảo Lộc (Nội thị)</name>
+    </wpt>
+    <wpt lat="11.7532" lon="108.3838">
+        <name>9. Cao tốc Liên Khương - Prenn</name>
+    </wpt>
+    <wpt lat="11.8792" lon="108.4712">
+        <name>10. Đèo Prenn (Cửa ngõ Đà Lạt)</name>
+    </wpt>
+    <wpt lat="11.9400" lon="108.4450">
+        <name>11. Hồ Xuân Hương (Đà Lạt)</name>
+    </wpt>
+</gpx>

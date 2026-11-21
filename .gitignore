@@ -1,0 +1,24 @@
+# Xcode
+## User settings
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+## Build generated
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Python
+.venv/
+__pycache__/
+*.pyc
+
+## macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes

@@ -1,0 +1,528 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F2081C58BDF3FEC7A44A385 /* SpeedLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D288A475737F53FD3100291D /* SpeedLiveActivity.swift */; };
+		2EF2FE3B949468444BC33489 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DACD762F43F9EC793FB4CD8 /* SettingsView.swift */; };
+		33491A9C57367EEEE8BBC84F /* RoadInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499D9444BB235785EAA48BA3 /* RoadInfo.swift */; };
+		818111D7D3BB98C61DBC0B0E /* VietSpeedWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1AA6B59DFC0AD276B29DE3B8 /* VietSpeedWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		81D2F060D078C01A714FC26E /* roads_vietnam.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 5FF743EDE6977BF222BD61AD /* roads_vietnam.sqlite */; };
+		8902504A259E2E6A772CFD7E /* VietSpeedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12284B72E961C311C90BF5E /* VietSpeedApp.swift */; };
+		93B42E792D587AEFD06F6D31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97502B8FF5A222C469CBE6F /* ContentView.swift */; };
+		A7EDD3B4F2D3584ABCE7F555 /* VoiceAlertManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A8E7F111748E296DED3E29 /* VoiceAlertManager.swift */; };
+		BB57671C1E55A95D5916EACE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 899EE638F7BD3AAF54CDFBF6 /* Assets.xcassets */; };
+		C6FD53769807677AD8B33F97 /* SpeedTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83C996955E8E93EFBDFCD18 /* SpeedTracker.swift */; };
+		D4857CBB519A2E0DF67F547A /* VietSpeedWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF6DAAD60F4BDC9C30F7F14 /* VietSpeedWidgetBundle.swift */; };
+		E8E8ED1CB3A96AEC43D4F5F3 /* SpeedWidgetAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B4A6D6733143B6A37C8B8BB /* SpeedWidgetAttributes.swift */; };
+		E9310E416FCAD69C6958A395 /* SpeedWidgetAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051924B637A851FEFEF5A903 /* SpeedWidgetAttributes.swift */; };
+		EF1359B639C46AF5D81B973C /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433AC355CE8512DAF0948F55 /* DatabaseManager.swift */; };
+		F944E7F375A5A0E12134A379 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1569C6A5546B8EEF210A7F9F /* AppSettings.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DB4C593E328928C05B687B9A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9A75FFDE2D81992FF5EA60B6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7BBAD28E9AD488F38B202EFC;
+			remoteInfo = VietSpeedWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		30D0D68DF694B95DCA1F7C1F /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				818111D7D3BB98C61DBC0B0E /* VietSpeedWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		051924B637A851FEFEF5A903 /* SpeedWidgetAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedWidgetAttributes.swift; sourceTree = "<group>"; };
+		0A77C0A938C0048709561F87 /* DrivingSimulation.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DrivingSimulation.gpx; sourceTree = "<group>"; };
+		1569C6A5546B8EEF210A7F9F /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		1AA6B59DFC0AD276B29DE3B8 /* VietSpeedWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = VietSpeedWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2203AFB31F0D8C98BCB58D54 /* VietSpeed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VietSpeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DACD762F43F9EC793FB4CD8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		3A7601BCAEE88376786ECA11 /* HcmToDaLat.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = HcmToDaLat.gpx; sourceTree = "<group>"; };
+		433AC355CE8512DAF0948F55 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
+		499D9444BB235785EAA48BA3 /* RoadInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoadInfo.swift; sourceTree = "<group>"; };
+		4B4A6D6733143B6A37C8B8BB /* SpeedWidgetAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedWidgetAttributes.swift; sourceTree = "<group>"; };
+		5FF743EDE6977BF222BD61AD /* roads_vietnam.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = roads_vietnam.sqlite; sourceTree = "<group>"; };
+		899EE638F7BD3AAF54CDFBF6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8D085EBE280C373A4EA75611 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A97502B8FF5A222C469CBE6F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B6A8E7F111748E296DED3E29 /* VoiceAlertManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAlertManager.swift; sourceTree = "<group>"; };
+		BF9D6D34FDEBFE5AED4036C4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D288A475737F53FD3100291D /* SpeedLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedLiveActivity.swift; sourceTree = "<group>"; };
+		DFF6DAAD60F4BDC9C30F7F14 /* VietSpeedWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietSpeedWidgetBundle.swift; sourceTree = "<group>"; };
+		E12284B72E961C311C90BF5E /* VietSpeedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietSpeedApp.swift; sourceTree = "<group>"; };
+		E83C996955E8E93EFBDFCD18 /* SpeedTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedTracker.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		11019539B30C5EF3274D4449 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0A77C0A938C0048709561F87 /* DrivingSimulation.gpx */,
+				3A7601BCAEE88376786ECA11 /* HcmToDaLat.gpx */,
+				BF9D6D34FDEBFE5AED4036C4 /* Info.plist */,
+				5FF743EDE6977BF222BD61AD /* roads_vietnam.sqlite */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		20E63F92B08A850A70F0E591 /* VietSpeedWidget */ = {
+			isa = PBXGroup;
+			children = (
+				8D085EBE280C373A4EA75611 /* Info.plist */,
+				D288A475737F53FD3100291D /* SpeedLiveActivity.swift */,
+				4B4A6D6733143B6A37C8B8BB /* SpeedWidgetAttributes.swift */,
+				DFF6DAAD60F4BDC9C30F7F14 /* VietSpeedWidgetBundle.swift */,
+			);
+			path = VietSpeedWidget;
+			sourceTree = "<group>";
+		};
+		4A646A45EA59B6A2C463BC66 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A97502B8FF5A222C469CBE6F /* ContentView.swift */,
+				2DACD762F43F9EC793FB4CD8 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		7D006187C474A74F8BB36082 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				433AC355CE8512DAF0948F55 /* DatabaseManager.swift */,
+				E83C996955E8E93EFBDFCD18 /* SpeedTracker.swift */,
+				B6A8E7F111748E296DED3E29 /* VoiceAlertManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		CE68D572E37B9E4CC18742BD = {
+			isa = PBXGroup;
+			children = (
+				DEBCC1F836B16058C94694CD /* VietSpeed */,
+				20E63F92B08A850A70F0E591 /* VietSpeedWidget */,
+				E871E893AEA7E09E215ECC1C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D4EAA8C872889FB0640B3378 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				1569C6A5546B8EEF210A7F9F /* AppSettings.swift */,
+				499D9444BB235785EAA48BA3 /* RoadInfo.swift */,
+				051924B637A851FEFEF5A903 /* SpeedWidgetAttributes.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		DEBCC1F836B16058C94694CD /* VietSpeed */ = {
+			isa = PBXGroup;
+			children = (
+				899EE638F7BD3AAF54CDFBF6 /* Assets.xcassets */,
+				F2FD79EC1014EE308CD76507 /* App */,
+				D4EAA8C872889FB0640B3378 /* Models */,
+				11019539B30C5EF3274D4449 /* Resources */,
+				7D006187C474A74F8BB36082 /* Services */,
+				4A646A45EA59B6A2C463BC66 /* Views */,
+			);
+			path = VietSpeed;
+			sourceTree = "<group>";
+		};
+		E871E893AEA7E09E215ECC1C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2203AFB31F0D8C98BCB58D54 /* VietSpeed.app */,
+				1AA6B59DFC0AD276B29DE3B8 /* VietSpeedWidget.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F2FD79EC1014EE308CD76507 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				E12284B72E961C311C90BF5E /* VietSpeedApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7BBAD28E9AD488F38B202EFC /* VietSpeedWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6A5A9E46D371D65B8EB94EDF /* Build configuration list for PBXNativeTarget "VietSpeedWidget" */;
+			buildPhases = (
+				CB8951A529CC5A1158FE7E69 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VietSpeedWidget;
+			packageProductDependencies = (
+			);
+			productName = VietSpeedWidget;
+			productReference = 1AA6B59DFC0AD276B29DE3B8 /* VietSpeedWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		8CD9C07AD03FC23E1490716B /* VietSpeed */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5148134EBE16360EC2AFF237 /* Build configuration list for PBXNativeTarget "VietSpeed" */;
+			buildPhases = (
+				4D8E5939DE32A852D0D4858D /* Sources */,
+				11399C00D2BCFA3BD287FA95 /* Resources */,
+				30D0D68DF694B95DCA1F7C1F /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0FF5AE5F437A016488ADB58E /* PBXTargetDependency */,
+			);
+			name = VietSpeed;
+			packageProductDependencies = (
+			);
+			productName = VietSpeed;
+			productReference = 2203AFB31F0D8C98BCB58D54 /* VietSpeed.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9A75FFDE2D81992FF5EA60B6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					7BBAD28E9AD488F38B202EFC = {
+						ProvisioningStyle = Automatic;
+					};
+					8CD9C07AD03FC23E1490716B = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 588F4D1803FA93D49CF8D71D /* Build configuration list for PBXProject "VietSpeed" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = CE68D572E37B9E4CC18742BD;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E871E893AEA7E09E215ECC1C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8CD9C07AD03FC23E1490716B /* VietSpeed */,
+				7BBAD28E9AD488F38B202EFC /* VietSpeedWidget */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		11399C00D2BCFA3BD287FA95 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB57671C1E55A95D5916EACE /* Assets.xcassets in Resources */,
+				81D2F060D078C01A714FC26E /* roads_vietnam.sqlite in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4D8E5939DE32A852D0D4858D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F944E7F375A5A0E12134A379 /* AppSettings.swift in Sources */,
+				93B42E792D587AEFD06F6D31 /* ContentView.swift in Sources */,
+				EF1359B639C46AF5D81B973C /* DatabaseManager.swift in Sources */,
+				33491A9C57367EEEE8BBC84F /* RoadInfo.swift in Sources */,
+				2EF2FE3B949468444BC33489 /* SettingsView.swift in Sources */,
+				C6FD53769807677AD8B33F97 /* SpeedTracker.swift in Sources */,
+				E9310E416FCAD69C6958A395 /* SpeedWidgetAttributes.swift in Sources */,
+				8902504A259E2E6A772CFD7E /* VietSpeedApp.swift in Sources */,
+				A7EDD3B4F2D3584ABCE7F555 /* VoiceAlertManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CB8951A529CC5A1158FE7E69 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F2081C58BDF3FEC7A44A385 /* SpeedLiveActivity.swift in Sources */,
+				E8E8ED1CB3A96AEC43D4F5F3 /* SpeedWidgetAttributes.swift in Sources */,
+				D4857CBB519A2E0DF67F547A /* VietSpeedWidgetBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0FF5AE5F437A016488ADB58E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7BBAD28E9AD488F38B202EFC /* VietSpeedWidget */;
+			targetProxy = DB4C593E328928C05B687B9A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0F2AA05D5287205CFB851416 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		1511DBAE2851AB42647ACFC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = VietSpeed/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jr.VietSpeed;
+				PRODUCT_NAME = VietSpeed;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		19E1DFF8F7AF6017397B6BBE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = VietSpeedWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jr.VietSpeed.Widget;
+				PRODUCT_NAME = VietSpeedWidget;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		543F38A60EA6185040A9A22F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C6F7A5CFED74EE8A96C4B943 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = VietSpeed/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jr.VietSpeed;
+				PRODUCT_NAME = VietSpeed;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FD320ABCE7B48D980C6C4D41 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = VietSpeedWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jr.VietSpeed.Widget;
+				PRODUCT_NAME = VietSpeedWidget;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5148134EBE16360EC2AFF237 /* Build configuration list for PBXNativeTarget "VietSpeed" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1511DBAE2851AB42647ACFC0 /* Debug */,
+				C6F7A5CFED74EE8A96C4B943 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		588F4D1803FA93D49CF8D71D /* Build configuration list for PBXProject "VietSpeed" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				543F38A60EA6185040A9A22F /* Debug */,
+				0F2AA05D5287205CFB851416 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6A5A9E46D371D65B8EB94EDF /* Build configuration list for PBXNativeTarget "VietSpeedWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FD320ABCE7B48D980C6C4D41 /* Debug */,
+				19E1DFF8F7AF6017397B6BBE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9A75FFDE2D81992FF5EA60B6 /* Project object */;
+}
