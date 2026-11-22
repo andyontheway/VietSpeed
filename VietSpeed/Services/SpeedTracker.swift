@@ -26,6 +26,10 @@ public final class SpeedTracker: NSObject, ObservableObject, CLLocationManagerDe
     private var simulationTimer: AnyCancellable?
     private var liveActivity: Activity<SpeedWidgetAttributes>?
     private var hasSetupLocation = false
+    private var isQuerying = false
+    private var pendingLocation: CLLocation? = nil
+    private var lastQueriedLocation: CLLocation? = nil
+    private var lastQueryTime: Date = Date.distantPast
 
     override public init() {
         super.init()
@@ -50,7 +54,7 @@ public final class SpeedTracker: NSObject, ObservableObject, CLLocationManagerDe
 
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-        locationManager.distanceFilter = kCLDistanceFilterNone
+        locationManager.distanceFilter = 2.0
         locationManager.activityType = .automotiveNavigation
 
         // Yêu cầu quyền GPS
@@ -108,11 +112,20 @@ public final class SpeedTracker: NSObject, ObservableObject, CLLocationManagerDe
         handleNewLocation(location)
     }
 
+    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("⚠️ CoreLocation Error: \(error.localizedDescription)")
+        DispatchQueue.main.async {
+            if let clErr = error as? CLError, clErr.code == .locationUnknown {
+                self.gpsStatusText = "Đang tìm vệ tinh GPS ngoài trời..."
+            } else {
+                self.gpsStatusText = "Tín hiệu GPS yếu"
+            }
+        }
+    }
+
     private func handleNewLocation(_ location: CLLocation) {
         let rawSpeed = location.speed
         let speedKmh = rawSpeed > 0 ? Int(rawSpeed * 3.6) : 0
-        let lat = location.coordinate.latitude
-        let lon = location.coordinate.longitude
         let accuracy = location.horizontalAccuracy
 
         DispatchQueue.main.async {
@@ -125,47 +138,81 @@ public final class SpeedTracker: NSObject, ObservableObject, CLLocationManagerDe
             }
         }
 
-        processCoordinate(lat: lat, lon: lon, speedKmh: speedKmh)
+        evaluateAndQuery(location: location, speedKmh: speedKmh)
     }
 
-    public func processCoordinate(lat: Double, lon: Double, speedKmh: Int) {
-        DispatchQueue.global(qos: .userInteractive).async {
+    private func evaluateAndQuery(location: CLLocation, speedKmh: Int) {
+        let now = Date()
+
+        // Nếu đang có truy vấn đang chạy: lưu location mới nhất vào pending
+        if isQuerying {
+            pendingLocation = location
+            return
+        }
+
+        // Nếu mới truy vấn cách đây < 0.8s và di chuyển chưa tới 5 mét -> bỏ qua
+        if let last = lastQueriedLocation,
+           location.distance(from: last) < 5.0,
+           now.timeIntervalSince(lastQueryTime) < 0.8 {
+            return
+        }
+
+        isQuerying = true
+        lastQueriedLocation = location
+        lastQueryTime = now
+
+        let lat = location.coordinate.latitude
+        let lon = location.coordinate.longitude
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
             let road = DatabaseManager.shared.findNearestRoad(lat: lat, lon: lon)
             let camera = DatabaseManager.shared.findNearbyCamera(lat: lat, lon: lon)
 
             DispatchQueue.main.async {
-                self.currentRoad = road
-                if let road = road {
-                    self.roadName = road.name
-                    self.speedLimit = road.speedLimit
-                    self.isOverSpeed = (speedKmh > road.speedLimit && road.speedLimit > 0)
+                self.applyDatabaseResults(road: road, camera: camera, speedKmh: speedKmh)
+                self.isQuerying = false
 
-                    // Cảnh báo giọng nói khi tốc độ thay đổi
-                    if self.previousSpeedLimit != nil && self.previousSpeedLimit != road.speedLimit {
-                        VoiceAlertManager.shared.alertSpeedLimitChanged(newLimit: road.speedLimit, roadName: road.name)
-                    }
-                    self.previousSpeedLimit = road.speedLimit
-
-                    // Cảnh báo quá tốc độ
-                    if self.isOverSpeed {
-                        VoiceAlertManager.shared.alertOverSpeed(limit: road.speedLimit)
-                    }
-                } else {
-                    self.roadName = "Khu dân cư (Chưa vào đường chính)"
-                    self.speedLimit = nil
-                    self.isOverSpeed = false
-                }
-
-                self.activeCamera = camera
-                if let camera = camera {
-                    VoiceAlertManager.shared.alertCamera(camera: camera)
-                }
-
-                // Cập nhật Dynamic Island NẾU đang được bật
-                if self.isDynamicIslandActive {
-                    self.updateLiveActivity(speedKmh: speedKmh, road: road, camera: camera)
+                // Nếu có toạ độ mới hơn đến trong lúc đang query: tiếp tục chạy
+                if let nextLoc = self.pendingLocation {
+                    self.pendingLocation = nil
+                    self.evaluateAndQuery(location: nextLoc, speedKmh: self.currentSpeed)
                 }
             }
+        }
+    }
+
+    private func applyDatabaseResults(road: RoadInfo?, camera: CameraInfo?, speedKmh: Int) {
+        self.currentRoad = road
+        if let road = road {
+            self.roadName = road.name
+            self.speedLimit = road.speedLimit
+            self.isOverSpeed = (speedKmh > road.speedLimit && road.speedLimit > 0)
+
+            // Cảnh báo giọng nói khi tốc độ thay đổi
+            if self.previousSpeedLimit != nil && self.previousSpeedLimit != road.speedLimit {
+                VoiceAlertManager.shared.alertSpeedLimitChanged(newLimit: road.speedLimit, roadName: road.name)
+            }
+            self.previousSpeedLimit = road.speedLimit
+
+            // Cảnh báo quá tốc độ
+            if self.isOverSpeed {
+                VoiceAlertManager.shared.alertOverSpeed(limit: road.speedLimit)
+            }
+        } else {
+            self.roadName = "Khu dân cư (Chưa vào đường chính)"
+            self.speedLimit = nil
+            self.isOverSpeed = false
+        }
+
+        self.activeCamera = camera
+        if let camera = camera {
+            VoiceAlertManager.shared.alertCamera(camera: camera)
+        }
+
+        // Cập nhật Dynamic Island NẾU đang được bật
+        if self.isDynamicIslandActive {
+            self.updateLiveActivity(speedKmh: speedKmh, road: road, camera: camera)
         }
     }
 

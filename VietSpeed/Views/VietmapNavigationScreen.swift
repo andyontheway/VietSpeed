@@ -435,6 +435,7 @@ public struct VietmapNavigationScreen: View {
     
     // MARK: - KHỞI TẠO LỘ TRÌNH DẪN ĐƯỜNG
     private func startNavigatingTo(item: MKMapItem) {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         let startCoord = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
         navManager.calculateRoute(from: startCoord, to: item) { success in
             if success {

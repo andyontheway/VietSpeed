@@ -45,7 +45,7 @@ public struct VietmapMapView: UIViewRepresentable {
         // 2. Kích hoạt nút định tâm (Recenter)
         if context.coordinator.lastRecenterTrigger != recenterTrigger {
             context.coordinator.lastRecenterTrigger = recenterTrigger
-            if let userLoc = uiView.userLocation.location ?? tracker.lastLocationObject {
+            if let userLoc = tracker.lastLocationObject ?? uiView.userLocation.location {
                 let camera = MKMapCamera(
                     lookingAtCenter: userLoc.coordinate,
                     fromDistance: 550,
@@ -53,7 +53,6 @@ public struct VietmapMapView: UIViewRepresentable {
                     heading: userLoc.course >= 0 ? userLoc.course : uiView.camera.heading
                 )
                 uiView.setCamera(camera, animated: true)
-                uiView.setUserTrackingMode(.followWithHeading, animated: true)
             }
         }
 
@@ -91,6 +90,7 @@ public struct VietmapMapView: UIViewRepresentable {
         var lastRecenterTrigger: Int = 0
         var renderedRoute: MKRoute? = nil
         var hasZoomedToRoute: Bool = false
+        private var lastCameraUpdateTime: Date = Date.distantPast
 
         init(_ parent: VietmapMapView) {
             self.parent = parent
@@ -109,17 +109,19 @@ public struct VietmapMapView: UIViewRepresentable {
             return MKOverlayRenderer(overlay: overlay)
         }
 
-        // Khi vị trí xe thay đổi
+        // Khi vị trí xe thay đổi: bám mượt mà khi di chuyển
         public func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
             guard let loc = userLocation.location else { return }
+            let now = Date()
+            guard now.timeIntervalSince(lastCameraUpdateTime) >= 1.0 else { return }
+            lastCameraUpdateTime = now
 
-            // Nếu đang trong chế độ dẫn đường và theo dõi xe: giữ camera bám góc lái xe
-            if mapView.userTrackingMode == .followWithHeading {
+            if loc.speed > 0.8 && loc.course >= 0 {
                 let camera = MKMapCamera(
                     lookingAtCenter: loc.coordinate,
-                    fromDistance: 500,
+                    fromDistance: 550,
                     pitch: parent.is3DMode ? 58 : 0,
-                    heading: loc.course >= 0 ? loc.course : mapView.camera.heading
+                    heading: loc.course
                 )
                 mapView.setCamera(camera, animated: true)
             }

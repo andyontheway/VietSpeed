@@ -18,6 +18,7 @@ public final class NavigationManager: NSObject, ObservableObject {
     @Published public var nextStepIcon: String = "arrow.up"
 
     private var cancellables = Set<AnyCancellable>()
+    private var currentSearch: MKLocalSearch?
 
     override private init() {
         super.init()
@@ -25,8 +26,12 @@ public final class NavigationManager: NSObject, ObservableObject {
 
     /// Tìm kiếm địa điểm bằng Apple MapKit
     public func searchPlaces(query: String, userLocation: CLLocationCoordinate2D? = nil) {
+        currentSearch?.cancel()
+        currentSearch = nil
+
         guard !query.trimmingCharacters(in: .whitespaces).isEmpty else {
             searchResults = []
+            isSearching = false
             return
         }
 
@@ -44,6 +49,7 @@ public final class NavigationManager: NSObject, ObservableObject {
         }
 
         let search = MKLocalSearch(request: request)
+        currentSearch = search
         search.start { [weak self] response, error in
             DispatchQueue.main.async {
                 self?.isSearching = false
