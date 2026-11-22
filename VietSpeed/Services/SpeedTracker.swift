@@ -19,6 +19,7 @@ public final class SpeedTracker: NSObject, ObservableObject, CLLocationManagerDe
     @Published public var isSimulating: Bool = false
     @Published public var isDynamicIslandActive: Bool = false
     @Published public var lastCoordinate: CLLocationCoordinate2D? = nil
+    @Published public var lastLocationObject: CLLocation? = nil
     @Published public var gpsStatusText: String = "Đang tìm vệ tinh GPS..."
 
     private var previousSpeedLimit: Int? = nil
@@ -118,6 +119,7 @@ public final class SpeedTracker: NSObject, ObservableObject, CLLocationManagerDe
             self.currentSpeed = speedKmh
             self.gpsAccuracy = accuracy
             self.lastCoordinate = location.coordinate
+            self.lastLocationObject = location
             if accuracy > 0 {
                 self.gpsStatusText = "GPS: Tốt (±\(Int(accuracy))m)"
             }
@@ -336,6 +338,20 @@ public final class SpeedTracker: NSObject, ObservableObject, CLLocationManagerDe
             self.speedLimit = st.limit
             self.roadName = st.road
             self.isOverSpeed = (st.speed > st.limit)
+            let demoLat = st.road.contains("Cao tốc") ? 10.795 : 10.780
+            let demoLon = st.road.contains("Cao tốc") ? 106.760 : 106.740
+            let demoCoord = CLLocationCoordinate2D(latitude: demoLat, longitude: demoLon)
+            self.lastCoordinate = demoCoord
+            self.lastLocationObject = CLLocation(
+                coordinate: demoCoord,
+                altitude: 15,
+                horizontalAccuracy: 5,
+                verticalAccuracy: 5,
+                course: 65.0,
+                speed: Double(st.speed) / 3.6,
+                timestamp: Date()
+            )
+
             self.currentRoad = RoadInfo(
                 name: st.road,
                 speedLimit: st.limit,

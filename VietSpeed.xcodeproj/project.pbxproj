@@ -8,12 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		0F2081C58BDF3FEC7A44A385 /* SpeedLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D288A475737F53FD3100291D /* SpeedLiveActivity.swift */; };
+		2B75D8F3904BC0233C32AA2D /* VietmapMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05DCFB2C7B6FC42EE62C1C58 /* VietmapMapView.swift */; };
 		2EF2FE3B949468444BC33489 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DACD762F43F9EC793FB4CD8 /* SettingsView.swift */; };
 		33491A9C57367EEEE8BBC84F /* RoadInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499D9444BB235785EAA48BA3 /* RoadInfo.swift */; };
 		818111D7D3BB98C61DBC0B0E /* VietSpeedWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1AA6B59DFC0AD276B29DE3B8 /* VietSpeedWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		81D2F060D078C01A714FC26E /* roads_vietnam.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 5FF743EDE6977BF222BD61AD /* roads_vietnam.sqlite */; };
 		8902504A259E2E6A772CFD7E /* VietSpeedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12284B72E961C311C90BF5E /* VietSpeedApp.swift */; };
 		93B42E792D587AEFD06F6D31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97502B8FF5A222C469CBE6F /* ContentView.swift */; };
+		9F1CDDEFB951D3B80826D732 /* VietmapNavigationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55F3B21663AE0BFB9D2ABD8 /* VietmapNavigationScreen.swift */; };
 		A7EDD3B4F2D3584ABCE7F555 /* VoiceAlertManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A8E7F111748E296DED3E29 /* VoiceAlertManager.swift */; };
 		BB57671C1E55A95D5916EACE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 899EE638F7BD3AAF54CDFBF6 /* Assets.xcassets */; };
 		C6FD53769807677AD8B33F97 /* SpeedTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83C996955E8E93EFBDFCD18 /* SpeedTracker.swift */; };
@@ -21,6 +23,7 @@
 		E8E8ED1CB3A96AEC43D4F5F3 /* SpeedWidgetAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B4A6D6733143B6A37C8B8BB /* SpeedWidgetAttributes.swift */; };
 		E9310E416FCAD69C6958A395 /* SpeedWidgetAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051924B637A851FEFEF5A903 /* SpeedWidgetAttributes.swift */; };
 		EF1359B639C46AF5D81B973C /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433AC355CE8512DAF0948F55 /* DatabaseManager.swift */; };
+		F6D0F2F14BD425FC138CF850 /* NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483CE54701540F1B4577853B /* NavigationManager.swift */; };
 		F944E7F375A5A0E12134A379 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1569C6A5546B8EEF210A7F9F /* AppSettings.swift */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +53,7 @@
 
 /* Begin PBXFileReference section */
 		051924B637A851FEFEF5A903 /* SpeedWidgetAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedWidgetAttributes.swift; sourceTree = "<group>"; };
+		05DCFB2C7B6FC42EE62C1C58 /* VietmapMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietmapMapView.swift; sourceTree = "<group>"; };
 		0A77C0A938C0048709561F87 /* DrivingSimulation.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DrivingSimulation.gpx; sourceTree = "<group>"; };
 		1569C6A5546B8EEF210A7F9F /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		1AA6B59DFC0AD276B29DE3B8 /* VietSpeedWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = VietSpeedWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -57,6 +61,7 @@
 		2DACD762F43F9EC793FB4CD8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3A7601BCAEE88376786ECA11 /* HcmToDaLat.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = HcmToDaLat.gpx; sourceTree = "<group>"; };
 		433AC355CE8512DAF0948F55 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
+		483CE54701540F1B4577853B /* NavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationManager.swift; sourceTree = "<group>"; };
 		499D9444BB235785EAA48BA3 /* RoadInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoadInfo.swift; sourceTree = "<group>"; };
 		4B4A6D6733143B6A37C8B8BB /* SpeedWidgetAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedWidgetAttributes.swift; sourceTree = "<group>"; };
 		5FF743EDE6977BF222BD61AD /* roads_vietnam.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = roads_vietnam.sqlite; sourceTree = "<group>"; };
@@ -65,6 +70,7 @@
 		A97502B8FF5A222C469CBE6F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B6A8E7F111748E296DED3E29 /* VoiceAlertManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAlertManager.swift; sourceTree = "<group>"; };
 		BF9D6D34FDEBFE5AED4036C4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		C55F3B21663AE0BFB9D2ABD8 /* VietmapNavigationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietmapNavigationScreen.swift; sourceTree = "<group>"; };
 		D288A475737F53FD3100291D /* SpeedLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedLiveActivity.swift; sourceTree = "<group>"; };
 		DFF6DAAD60F4BDC9C30F7F14 /* VietSpeedWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietSpeedWidgetBundle.swift; sourceTree = "<group>"; };
 		E12284B72E961C311C90BF5E /* VietSpeedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietSpeedApp.swift; sourceTree = "<group>"; };
@@ -99,6 +105,8 @@
 			children = (
 				A97502B8FF5A222C469CBE6F /* ContentView.swift */,
 				2DACD762F43F9EC793FB4CD8 /* SettingsView.swift */,
+				05DCFB2C7B6FC42EE62C1C58 /* VietmapMapView.swift */,
+				C55F3B21663AE0BFB9D2ABD8 /* VietmapNavigationScreen.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -107,6 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				433AC355CE8512DAF0948F55 /* DatabaseManager.swift */,
+				483CE54701540F1B4577853B /* NavigationManager.swift */,
 				E83C996955E8E93EFBDFCD18 /* SpeedTracker.swift */,
 				B6A8E7F111748E296DED3E29 /* VoiceAlertManager.swift */,
 			);
@@ -261,11 +270,14 @@
 				F944E7F375A5A0E12134A379 /* AppSettings.swift in Sources */,
 				93B42E792D587AEFD06F6D31 /* ContentView.swift in Sources */,
 				EF1359B639C46AF5D81B973C /* DatabaseManager.swift in Sources */,
+				F6D0F2F14BD425FC138CF850 /* NavigationManager.swift in Sources */,
 				33491A9C57367EEEE8BBC84F /* RoadInfo.swift in Sources */,
 				2EF2FE3B949468444BC33489 /* SettingsView.swift in Sources */,
 				C6FD53769807677AD8B33F97 /* SpeedTracker.swift in Sources */,
 				E9310E416FCAD69C6958A395 /* SpeedWidgetAttributes.swift in Sources */,
 				8902504A259E2E6A772CFD7E /* VietSpeedApp.swift in Sources */,
+				2B75D8F3904BC0233C32AA2D /* VietmapMapView.swift in Sources */,
+				9F1CDDEFB951D3B80826D732 /* VietmapNavigationScreen.swift in Sources */,
 				A7EDD3B4F2D3584ABCE7F555 /* VoiceAlertManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

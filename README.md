@@ -6,7 +6,14 @@
 
 ## ✨ Tính Năng Nổi Bật
 
-- 🗺️ **100% Offline SQLite Database:**
+- 🗺️ **Bản Đồ Dẫn Đường 3D Phong Cách Vietmap:**
+  - Chế độ bản đồ 3D (`58° pitch`) lái xe bám theo hướng di chuyển (`Follow with Heading`), giao diện Dark Mode chống chói mắt ban đêm.
+  - Cụm **Widget tốc độ Vietmap nổi**: Hiển thị song song biển giới hạn tốc độ (vòng tròn viền đỏ), đồng hồ tốc độ điện tử (đổi màu đỏ/vàng khi quá tốc độ), biển phụ (Khu đông dân cư / Cao tốc), và cảnh báo camera phạt nguội đếm ngược khoảng cách.
+  - **Dẫn đường lộ trình (Turn-by-Turn Guidance):** Banner chỉ đường hiển thị mũi tên rẽ trực quan, khoảng cách ngã rẽ, tổng quãng đường còn lại và thời gian dự kiến (ETA) kèm thông báo giọng nói tiếng Việt.
+  - **Tìm kiếm địa điểm nhanh:** Tích hợp `MKLocalSearch` thông minh tìm kiếm địa chỉ mọi nơi tại Việt Nam, kèm gợi ý nhanh (Sân bay Tân Sơn Nhất, Chợ Bến Thành, Cao tốc Long Thành...).
+  - **Chuyển đổi 1 chạm:** Chuyển đổi linh hoạt giữa chế độ **⚡ HUD Tốc độ** (đen OLED tiết kiệm pin) và chế độ **🗺️ Bản đồ Vietmap**.
+
+- 🚗 **100% Offline SQLite Database:**
   - Nhúng sẵn cơ sở dữ liệu hơn **1.430.000 đoạn đường** và camera trên toàn lãnh thổ Việt Nam (trích xuất từ OpenStreetMap).
   - Sử dụng cấu trúc chỉ mục không gian **R*Tree** với tốc độ tra cứu siêu tốc: **0.05ms - 0.2ms**, không tốn 4G/5G, không phụ thuộc vào sóng mạng ở các cung đèo/vùng xa.
   
