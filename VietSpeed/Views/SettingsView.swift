@@ -5,7 +5,6 @@ public struct SettingsView: View {
 
     // Lưu các cấu hình vào bộ nhớ máy (UserDefaults) để giữ nguyên sau khi tắt app
     @AppStorage("is_dark_mode") private var isDarkMode: Bool = true
-    @AppStorage("google_maps_api_key") private var googleApiKey: String = ""
     @AppStorage("selected_vehicle") private var selectedVehicleRaw: String = VehicleType.car.rawValue
     @AppStorage("speed_tolerance") private var speedTolerance: Int = 0 // Dung sai vượt quá: 0, 5, 10 km/h
     @AppStorage("voice_alert_enabled") private var voiceAlertEnabled: Bool = true
@@ -41,41 +40,25 @@ public struct SettingsView: View {
                     .pickerStyle(.inline)
                 }
 
-                // 0.1 CẤU HÌNH GOOGLE PLACES API (TÌM ĐỊA ĐIỂM VIỆT NAM)
+                // 0.1 HƯỚNG DẪN DÙNG GOOGLE MAPS MIỄN PHÍ
                 Section(
-                    header: Label("Tìm kiếm Google Places", systemImage: "globe.asia.australia.fill"),
-                    footer: Text(googleApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?
-                        "Chưa nhập Key: Đang dùng Apple Maps. Dán Google API Key để tìm kiếm chính xác từng quán ăn, cây xăng, địa chỉ ngõ hẻm tại Việt Nam." :
-                        "🟢 Đang kích hoạt tìm kiếm địa điểm thông minh bằng Google Places API.")
+                    header: Label("Dẫn đường bằng Google Maps", systemImage: "link.circle.fill"),
+                    footer: Text("Hoàn toàn miễn phí 100%: Bạn mở app Google Maps, tìm địa điểm yêu thích, chọn 'Chia sẻ' -> 'Sao chép liên kết' rồi dán vào VietSpeed để nhận toạ độ và dẫn đường tức thì.")
                 ) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text("Google API Key:")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                            Spacer()
-                            if !googleApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Text("Đã kích hoạt")
-                                    .font(.caption2)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.green)
-                            }
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundColor(.green)
+                            Text("100% Miễn phí • Không cần API Key")
+                                .font(.subheadline)
+                                .fontWeight(.bold)
                         }
 
-                        SecureField("Dán Google Places API Key vào đây...", text: $googleApiKey)
-                            .textFieldStyle(.roundedBorder)
-                            .autocapitalization(.none)
-                            .disableAutocorrection(true)
+                        Text("VietSpeed tự động bóc tách toạ độ chính xác từ mọi link chia sẻ của Google Maps (quán ăn, toà nhà, ngõ hẻm...) để vẽ đường 3D và cảnh báo tốc độ.")
+                            .font(.caption)
+                            .foregroundColor(.gray)
                     }
-
-                    Link(destination: URL(string: "https://console.cloud.google.com/google/maps-apis")!) {
-                        HStack {
-                            Image(systemName: "arrow.up.right.square")
-                            Text("Lấy Google API Key miễn phí ($200/tháng)")
-                        }
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                    }
+                    .padding(.vertical, 4)
                 }
 
                 // 1. CHỌN LOẠI PHƯƠNG TIỆN (Quan trọng theo luật giao thông VN)

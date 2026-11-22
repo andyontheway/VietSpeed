@@ -4,22 +4,30 @@ import Combine
 import CoreLocation
 import UIKit
 
-// MARK: - MÔ HÌNH KẾT QUẢ TÌM KIẾM HỢP NHẤT (GOOGLE PLACES + APPLE MAPS)
+// MARK: - MÔ HÌNH KẾT QUẢ TÌM KIẾM
 public struct PlaceSearchResult: Identifiable, Hashable {
     public let id: String
     public let title: String
     public let subtitle: String
-    public let isGooglePlace: Bool
-    public let googlePlaceId: String?
+    public let isGoogleLink: Bool
+    public let coordinate: CLLocationCoordinate2D?
     public let mapItem: MKMapItem?
 
-    public init(id: String, title: String, subtitle: String, isGooglePlace: Bool, googlePlaceId: String?, mapItem: MKMapItem?) {
+    public init(id: String, title: String, subtitle: String, isGoogleLink: Bool, coordinate: CLLocationCoordinate2D?, mapItem: MKMapItem?) {
         self.id = id
         self.title = title
         self.subtitle = subtitle
-        self.isGooglePlace = isGooglePlace
-        self.googlePlaceId = googlePlaceId
+        self.isGoogleLink = isGoogleLink
+        self.coordinate = coordinate
         self.mapItem = mapItem
+    }
+
+    public static func == (lhs: PlaceSearchResult, rhs: PlaceSearchResult) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
 
@@ -28,7 +36,8 @@ public final class NavigationManager: NSObject, ObservableObject {
 
     @Published public var searchResults: [PlaceSearchResult] = []
     @Published public var isSearching: Bool = false
-    @Published public var activeSearchEngine: String = "Apple" // "Google" hoặc "Apple"
+    @Published public var isResolvingLink: Bool = false
+    @Published public var resolvingStatusText: String? = nil
     @Published public var activeRoute: MKRoute? = nil
     @Published public var isNavigating: Bool = false
     @Published public var destinationTitle: String? = nil
@@ -46,7 +55,7 @@ public final class NavigationManager: NSObject, ObservableObject {
         super.init()
     }
 
-    /// Tìm kiếm địa điểm (Tự động ưu tiên Google Places nếu đã có API Key, fallback Apple Maps)
+    /// Tìm kiếm địa điểm (Nếu là Link Google Maps thì tự động phân tích toạ độ, nếu từ khoá thì tìm nhanh)
     public func searchPlaces(query: String, userLocation: CLLocationCoordinate2D? = nil) {
         currentSearch?.cancel()
         currentSearch = nil
@@ -58,87 +67,105 @@ public final class NavigationManager: NSObject, ObservableObject {
             return
         }
 
-        let apiKey = UserDefaults.standard.string(forKey: "google_maps_api_key")?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        // 🌟 NẾU LÀ LIÊN KẾT GOOGLE MAPS HOẶC TOẠ ĐỘ: BÓC TÁCH NGAY
+        if GoogleMapsLinkResolver.shared.containsGoogleMapsLinkOrCoordinate(trimmed) {
+            isResolvingLink = true
+            resolvingStatusText = "Đang phân tích liên kết Google Maps..."
 
-        if !apiKey.isEmpty {
-            // 🌟 1. TÌM KIẾM BẰNG GOOGLE PLACES API (Toàn bộ quán ăn, toà nhà, ngõ hẻm Việt Nam)
-            activeSearchEngine = "Google"
-            isSearching = true
-
-            GooglePlacesService.shared.searchAutocomplete(
-                query: trimmed,
-                apiKey: apiKey,
-                userLocation: userLocation
-            ) { [weak self] items in
+            GoogleMapsLinkResolver.shared.resolve(text: trimmed) { [weak self] result in
                 guard let self = self else { return }
-                self.isSearching = false
-                self.searchResults = items.map {
-                    PlaceSearchResult(
-                        id: $0.id,
-                        title: $0.title,
-                        subtitle: $0.subtitle,
-                        isGooglePlace: true,
-                        googlePlaceId: $0.id,
+                self.isResolvingLink = false
+                self.resolvingStatusText = nil
+
+                switch result {
+                case .success(let info):
+                    let item = PlaceSearchResult(
+                        id: "\(info.coordinate.latitude),\(info.coordinate.longitude)",
+                        title: info.title,
+                        subtitle: "Toạ độ: \(String(format: "%.5f, %.5f", info.coordinate.latitude, info.coordinate.longitude))",
+                        isGoogleLink: true,
+                        coordinate: info.coordinate,
                         mapItem: nil
                     )
+                    self.searchResults = [item]
+                case .failure(let error):
+                    print("⚠️ Không bóc tách được link: \(error.localizedDescription)")
+                    self.searchResults = []
                 }
             }
-        } else {
-            // 🍏 2. TÌM KIẾM MẶC ĐỊNH BẰNG APPLE MAPKIT (Nếu chưa cấu hình API Key)
-            activeSearchEngine = "Apple"
-            isSearching = true
-            let request = MKLocalSearch.Request()
-            request.naturalLanguageQuery = trimmed
-            request.resultTypes = [.pointOfInterest, .address]
+            return
+        }
 
-            if let loc = userLocation {
-                request.region = MKCoordinateRegion(
-                    center: loc,
-                    latitudinalMeters: 50_000,
-                    longitudinalMeters: 50_000
-                )
-            }
+        // TÌM KIẾM MẶC ĐỊNH BẰNG APPLE MAPKIT
+        isSearching = true
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = trimmed
+        request.resultTypes = [.pointOfInterest, .address]
 
-            let search = MKLocalSearch(request: request)
-            currentSearch = search
-            search.start { [weak self] response, error in
-                DispatchQueue.main.async {
-                    self?.isSearching = false
-                    guard let self = self, let response = response else { return }
-                    self.searchResults = response.mapItems.map { item in
-                        PlaceSearchResult(
-                            id: "\(item.placemark.coordinate.latitude),\(item.placemark.coordinate.longitude)",
-                            title: item.name ?? "Điểm đến",
-                            subtitle: item.placemark.title ?? "",
-                            isGooglePlace: false,
-                            googlePlaceId: nil,
-                            mapItem: item
-                        )
-                    }
+        if let loc = userLocation {
+            request.region = MKCoordinateRegion(
+                center: loc,
+                latitudinalMeters: 50_000,
+                longitudinalMeters: 50_000
+            )
+        }
+
+        let search = MKLocalSearch(request: request)
+        currentSearch = search
+        search.start { [weak self] response, error in
+            DispatchQueue.main.async {
+                self?.isSearching = false
+                guard let self = self, let response = response else { return }
+                self.searchResults = response.mapItems.map { item in
+                    PlaceSearchResult(
+                        id: "\(item.placemark.coordinate.latitude),\(item.placemark.coordinate.longitude)",
+                        title: item.name ?? "Điểm đến",
+                        subtitle: item.placemark.title ?? "",
+                        isGoogleLink: false,
+                        coordinate: item.placemark.coordinate,
+                        mapItem: item
+                    )
                 }
             }
         }
     }
 
-    /// Khởi chạy dẫn đường từ kết quả tìm kiếm (hỗ trợ cả Google Place và Apple MapItem)
+    /// Khởi chạy dẫn đường từ liên kết Google Maps (Dán link)
+    public func resolveLinkAndNavigate(text: String, startCoord: CLLocationCoordinate2D, completion: ((Bool) -> Void)? = nil) {
+        isResolvingLink = true
+        resolvingStatusText = "Đang mở điểm đến từ Google Maps..."
+
+        GoogleMapsLinkResolver.shared.resolve(text: text) { [weak self] result in
+            guard let self = self else { return }
+            self.isResolvingLink = false
+            self.resolvingStatusText = nil
+
+            switch result {
+            case .success(let info):
+                let placemark = MKPlacemark(coordinate: info.coordinate)
+                let mapItem = MKMapItem(placemark: placemark)
+                mapItem.name = info.title
+                self.destinationCoordinate = info.coordinate
+                self.calculateRoute(from: startCoord, to: mapItem, completion: completion)
+            case .failure(let error):
+                print("❌ Lỗi phân tích link: \(error.localizedDescription)")
+                completion?(false)
+            }
+        }
+    }
+
+    /// Khởi chạy dẫn đường từ kết quả tìm kiếm đã chọn
     public func navigateTo(
         item: PlaceSearchResult,
         startCoord: CLLocationCoordinate2D,
         completion: ((Bool) -> Void)? = nil
     ) {
-        if item.isGooglePlace, let placeId = item.googlePlaceId {
-            let apiKey = UserDefaults.standard.string(forKey: "google_maps_api_key")?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            GooglePlacesService.shared.fetchPlaceLocation(placeId: placeId, apiKey: apiKey) { [weak self] coord, name in
-                guard let self = self, let coord = coord else {
-                    completion?(false)
-                    return
-                }
-                let placemark = MKPlacemark(coordinate: coord)
-                let mapItem = MKMapItem(placemark: placemark)
-                mapItem.name = name ?? item.title
-                self.destinationCoordinate = coord
-                self.calculateRoute(from: startCoord, to: mapItem, completion: completion)
-            }
+        if let coord = item.coordinate {
+            let placemark = MKPlacemark(coordinate: coord)
+            let mapItem = MKMapItem(placemark: placemark)
+            mapItem.name = item.title
+            self.destinationCoordinate = coord
+            self.calculateRoute(from: startCoord, to: mapItem, completion: completion)
         } else if let mapItem = item.mapItem {
             self.destinationCoordinate = mapItem.placemark.coordinate
             self.calculateRoute(from: startCoord, to: mapItem, completion: completion)

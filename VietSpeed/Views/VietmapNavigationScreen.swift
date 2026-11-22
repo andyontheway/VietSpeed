@@ -10,6 +10,8 @@ public struct VietmapNavigationScreen: View {
     @State private var is3DMode: Bool = true
     @State private var recenterTrigger: Int = 0
     @State private var searchQuery: String = ""
+    @State private var clipboardLink: String? = nil
+    @State private var showClipboardBanner: Bool = false
 
     public init(tracker: SpeedTracker, isDarkMode: Binding<Bool>) {
         self.tracker = tracker
@@ -43,6 +45,31 @@ public struct VietmapNavigationScreen: View {
                     .padding(.horizontal, 14)
                     .padding(.top, 4)
 
+                // THÔNG BÁO TỰ ĐỘNG PHÁT HIỆN LINK GOOGLE MAPS TỪ BỘ NHỚ TẠM (CLIPBOARD)
+                if showClipboardBanner && !navManager.isNavigating, let clip = clipboardLink {
+                    clipboardDetectedCard(clip: clip)
+                        .padding(.horizontal, 14)
+                        .padding(.top, 6)
+                }
+
+                // TIẾN TRÌNH ĐANG PHÂN TÍCH LINK GOOGLE MAPS
+                if navManager.isResolvingLink {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: isDarkMode ? .cyan : .blue))
+                            .scaleEffect(0.8)
+                        Text(navManager.resolvingStatusText ?? "Đang phân tích toạ độ Google Maps...")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(isDarkMode ? .white : Color(red: 0.1, green: 0.12, blue: 0.15))
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(isDarkMode ? Color.black.opacity(0.85) : Color.white.opacity(0.95))
+                    .cornerRadius(10)
+                    .padding(.top, 6)
+                }
+
                 // DANH SÁCH GỢI Ý TÌM KIẾM (KHI ĐANG GÕ)
                 if !navManager.searchResults.isEmpty && !navManager.isNavigating {
                     searchResultsDropdown
@@ -57,6 +84,9 @@ public struct VietmapNavigationScreen: View {
                     .padding(.horizontal, 14)
                     .padding(.bottom, 12)
             }
+        }
+        .onAppear {
+            checkClipboard()
         }
     }
 
@@ -157,14 +187,14 @@ public struct VietmapNavigationScreen: View {
                 )
             }
         } else {
-            // THANH TÌM KIẾM ĐỊA ĐIỂM + CHIP GỢI Ý
+            // THANH TÌM KIẾM ĐỊA ĐIỂM + NÚT DÁN LINK GOOGLE MAPS
             VStack(spacing: 8) {
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(isDarkMode ? .cyan : .blue)
                         .font(.system(size: 16, weight: .bold))
 
-                    TextField(navManager.activeSearchEngine == "Google" ? "Tìm bằng Google Places (Quán ăn, ngõ hẻm...)" : "Tìm điểm đến...", text: $searchQuery)
+                    TextField("Dán link Google Maps hoặc tìm điểm đến...", text: $searchQuery)
                         .foregroundColor(isDarkMode ? .white : .black)
                         .font(.subheadline)
                         .autocapitalization(.none)
@@ -174,14 +204,24 @@ public struct VietmapNavigationScreen: View {
                             navManager.searchPlaces(query: query, userLocation: loc)
                         }
 
-                    if navManager.activeSearchEngine == "Google" {
-                        Text("Google")
-                            .font(.system(size: 8, weight: .black))
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 2)
-                            .background(Color.blue.opacity(0.2))
-                            .foregroundColor(.blue)
-                            .cornerRadius(4)
+                    // NÚT DÁN LINK NHANH TỪ CLIPBOARD
+                    Button(action: {
+                        if let clip = UIPasteboard.general.string, !clip.isEmpty {
+                            searchQuery = clip
+                            handlePasteAndNavigate(clip)
+                        }
+                    }) {
+                        HStack(spacing: 3) {
+                            Image(systemName: "doc.on.clipboard")
+                                .font(.system(size: 10))
+                            Text("Dán link")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 5)
+                        .background(isDarkMode ? Color.white.opacity(0.12) : Color.blue.opacity(0.1))
+                        .foregroundColor(isDarkMode ? .cyan : .blue)
+                        .cornerRadius(6)
                     }
 
                     if !searchQuery.isEmpty {
@@ -194,8 +234,8 @@ public struct VietmapNavigationScreen: View {
                         }
                     }
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(isDarkMode ? Color(red: 0.09, green: 0.11, blue: 0.15).opacity(0.92) : Color.white.opacity(0.96))
@@ -242,6 +282,61 @@ public struct VietmapNavigationScreen: View {
         }
     }
 
+    // MARK: - BANNER PHÁT HIỆN LINK TỰ ĐỘNG TỪ GOOGLE MAPS
+    @ViewBuilder
+    private func clipboardDetectedCard(clip: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "link.badge.plus")
+                .foregroundColor(.green)
+                .font(.system(size: 16, weight: .bold))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Phát hiện link từ Google Maps:")
+                    .font(.caption2)
+                    .foregroundColor(isDarkMode ? .gray : Color.black.opacity(0.6))
+                Text(GoogleMapsLinkResolver.shared.extractPlaceNameFromText(clip) ?? "Chạm để dẫn đường ngay")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(isDarkMode ? .white : Color.black)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Button(action: {
+                handlePasteAndNavigate(clip)
+            }) {
+                Text("Dẫn đường")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+            }
+
+            Button(action: {
+                withAnimation {
+                    showClipboardBanner = false
+                }
+            }) {
+                Image(systemName: "xmark")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(isDarkMode ? Color(red: 0.11, green: 0.13, blue: 0.17) : Color.white)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.green.opacity(0.6), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.2), radius: 6, y: 3)
+    }
+
     // MARK: - DROPDOWN KẾT QUẢ TÌM KIẾM
     private var searchResultsDropdown: some View {
         VStack(spacing: 0) {
@@ -252,9 +347,9 @@ public struct VietmapNavigationScreen: View {
                             startNavigatingTo(item: item)
                         }) {
                             HStack(spacing: 12) {
-                                Image(systemName: item.isGooglePlace ? "mappin.and.ellipse" : "car.circle.fill")
+                                Image(systemName: item.isGoogleLink ? "mappin.and.ellipse" : "car.circle.fill")
                                     .font(.title2)
-                                    .foregroundColor(item.isGooglePlace ? .red : (isDarkMode ? .cyan : .blue))
+                                    .foregroundColor(item.isGoogleLink ? .red : (isDarkMode ? .cyan : .blue))
 
                                 VStack(alignment: .leading, spacing: 2) {
                                     HStack(spacing: 4) {
@@ -264,13 +359,13 @@ public struct VietmapNavigationScreen: View {
                                             .foregroundColor(isDarkMode ? .white : .black)
                                             .lineLimit(1)
 
-                                        if item.isGooglePlace {
-                                            Text("Google")
+                                        if item.isGoogleLink {
+                                            Text("Google Maps")
                                                 .font(.system(size: 8, weight: .heavy))
                                                 .padding(.horizontal, 4)
                                                 .padding(.vertical, 1)
-                                                .background(Color.blue.opacity(0.15))
-                                                .foregroundColor(.blue)
+                                                .background(Color.red.opacity(0.15))
+                                                .foregroundColor(.red)
                                                 .cornerRadius(3)
                                         }
                                     }
@@ -506,7 +601,19 @@ public struct VietmapNavigationScreen: View {
         }
     }
 
-    // MARK: - KHỞI TẠO LỘ TRÌNH DẪN ĐƯỜNG
+    // MARK: - HÀM XỬ LÝ DÁN LINK & DẪN ĐƯỜNG
+    private func handlePasteAndNavigate(_ text: String) {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        showClipboardBanner = false
+        let startCoord = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
+        navManager.resolveLinkAndNavigate(text: text, startCoord: startCoord) { success in
+            if success {
+                searchQuery = ""
+                recenterTrigger += 1
+            }
+        }
+    }
+
     private func startNavigatingTo(item: PlaceSearchResult) {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         let startCoord = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
@@ -515,6 +622,19 @@ public struct VietmapNavigationScreen: View {
                 searchQuery = ""
                 recenterTrigger += 1
             }
+        }
+    }
+
+    private func checkClipboard() {
+        if let clip = UIPasteboard.general.string,
+           GoogleMapsLinkResolver.shared.containsGoogleMapsLinkOrCoordinate(clip) {
+            clipboardLink = clip
+            withAnimation(.spring()) {
+                showClipboardBanner = true
+            }
+        } else {
+            showClipboardBanner = false
+            clipboardLink = nil
         }
     }
 }
