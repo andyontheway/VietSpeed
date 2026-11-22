@@ -5,16 +5,17 @@ import CoreLocation
 public struct VietmapNavigationScreen: View {
     @ObservedObject var tracker: SpeedTracker
     @ObservedObject var navManager = NavigationManager.shared
-    
+    @Binding var isDarkMode: Bool
+
     @State private var is3DMode: Bool = true
     @State private var recenterTrigger: Int = 0
     @State private var searchQuery: String = ""
-    @State private var isSearchFocused: Bool = false
-    
-    public init(tracker: SpeedTracker) {
+
+    public init(tracker: SpeedTracker, isDarkMode: Binding<Bool>) {
         self.tracker = tracker
+        self._isDarkMode = isDarkMode
     }
-    
+
     // Các điểm đến gợi ý nhanh
     private let quickDestinations = [
         ("Sân bay Tân Sơn Nhất", "Sân bay Tân Sơn Nhất, TP.HCM"),
@@ -22,34 +23,35 @@ public struct VietmapNavigationScreen: View {
         ("Cao tốc Long Thành", "Nút giao An Phú, Cao tốc TP.HCM - Long Thành"),
         ("TP. Vũng Tàu", "Thành phố Vũng Tàu, Bà Rịa - Vũng Tàu")
     ]
-    
+
     public var body: some View {
         ZStack {
-            // 1. LỚP BẢN ĐỒ 3D TOÀN MÀN HÌNH (VIETMAP 3D ENGINE)
+            // 1. LỚP BẢN ĐỒ 3D TOÀN MÀN HÌNH (DAY / NIGHT ENGINE)
             VietmapMapView(
                 tracker: tracker,
                 navManager: navManager,
                 is3DMode: is3DMode,
+                isDarkMode: isDarkMode,
                 recenterTrigger: recenterTrigger
             )
             .ignoresSafeArea()
-            
+
             // 2. CÁC LỚP WIDGET ĐIỀU HƯỚNG NỔI TRÊN BẢN ĐỒ
             VStack(spacing: 0) {
                 // TOP BAR: DẪN ĐƯỜNG HOẶC TÌM KIẾM
                 topHeaderSection
                     .padding(.horizontal, 14)
-                    .padding(.top, 6)
-                
+                    .padding(.top, 4)
+
                 // DANH SÁCH GỢI Ý TÌM KIẾM (KHI ĐANG GÕ)
                 if !navManager.searchResults.isEmpty && !navManager.isNavigating {
                     searchResultsDropdown
                         .padding(.horizontal, 14)
                         .padding(.top, 6)
                 }
-                
+
                 Spacer()
-                
+
                 // PHẦN ĐÁY: WIDGET TỐC ĐỘ VIETMAP (TRÁI) & CÁC NÚT ĐIỀU KHIỂN BẢN ĐỒ (PHẢI)
                 bottomControlsSection
                     .padding(.horizontal, 14)
@@ -57,92 +59,100 @@ public struct VietmapNavigationScreen: View {
             }
         }
     }
-    
-    // MARK: - TOP HEADER SECTION
+
+    // MARK: - TOP HEADER SECTION (BANNER DẪN ĐƯỜNG HOẶC THANH TÌM KIẾM)
     @ViewBuilder
     private var topHeaderSection: some View {
         if navManager.isNavigating {
-            // BANNER CHỈ DẪN LỘ TRÌNH (TURN-BY-TURN HUD)
-            VStack(spacing: 8) {
+            // BANNER CHỈ DẪN LỘ TRÌNH (TURN-BY-TURN CARD) - CHUẨN TƯƠNG PHẢN CAO
+            VStack(spacing: 0) {
                 HStack(spacing: 12) {
                     // Biểu tượng rẽ hướng tiếp theo
                     ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(red: 0.05, green: 0.55, blue: 0.95))
-                            .frame(width: 52, height: 52)
-                            .shadow(color: Color.blue.opacity(0.4), radius: 6)
-                        
-                        VStack(spacing: 2) {
-                            Image(systemName: navManager.nextStepIcon)
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
-                        }
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(LinearGradient(
+                                colors: [Color(red: 0.05, green: 0.52, blue: 0.98), Color(red: 0.02, green: 0.38, blue: 0.88)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                            .frame(width: 54, height: 54)
+                            .shadow(color: Color.blue.opacity(0.35), radius: 6, y: 3)
+
+                        Image(systemName: navManager.nextStepIcon)
+                            .font(.system(size: 26, weight: .black))
+                            .foregroundColor(.white)
                     }
-                    
+
                     // Khoảng cách tới ngã rẽ và tên đường tiếp theo
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             if !navManager.nextStepDistance.isEmpty {
                                 Text(navManager.nextStepDistance)
-                                    .font(.system(size: 22, weight: .black, design: .rounded))
-                                    .foregroundColor(.white)
+                                    .font(.system(size: 24, weight: .black, design: .rounded))
+                                    .foregroundColor(isDarkMode ? .white : Color(red: 0.05, green: 0.08, blue: 0.12))
                             }
                             Text(navManager.nextInstruction)
-                                .font(.subheadline)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(isDarkMode ? .white : Color(red: 0.05, green: 0.08, blue: 0.12))
                                 .lineLimit(1)
                         }
-                        
-                        // Quãng đường còn lại & Thời gian dự kiến
+
+                        // Quãng đường còn lại & Thời gian dự kiến (ETA)
                         HStack(spacing: 8) {
-                            Label(navManager.remainingDistance, systemImage: "point.topleft.down.curvedto.point.bottomright.up")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.85))
-                            
+                            HStack(spacing: 4) {
+                                Image(systemName: "point.topleft.down.curvedto.point.bottomright.up")
+                                    .font(.system(size: 11, weight: .bold))
+                                Text(navManager.remainingDistance)
+                                    .font(.system(size: 12, weight: .semibold))
+                            }
+                            .foregroundColor(isDarkMode ? Color.white.opacity(0.75) : Color(red: 0.35, green: 0.38, blue: 0.42))
+
                             Text("•")
-                                .foregroundColor(.gray)
-                            
-                            Label(navManager.remainingTime, systemImage: "clock.fill")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .foregroundColor(.green)
+                                .foregroundColor(isDarkMode ? Color.gray.opacity(0.6) : Color.gray.opacity(0.4))
+
+                            HStack(spacing: 4) {
+                                Image(systemName: "clock.fill")
+                                    .font(.system(size: 11))
+                                Text(navManager.remainingTime)
+                                    .font(.system(size: 12, weight: .black))
+                            }
+                            .foregroundColor(isDarkMode ? Color.green : Color(red: 0.0, green: 0.55, blue: 0.22))
                         }
                     }
-                    
+
                     Spacer()
-                    
-                    // Nút huỷ lộ trình
+
+                    // Nút huỷ lộ trình dẫn đường
                     Button(action: {
                         navManager.stopNavigation()
                     }) {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 26))
-                            .foregroundColor(.white.opacity(0.8))
+                            .font(.system(size: 28))
+                            .foregroundColor(isDarkMode ? Color.white.opacity(0.65) : Color.black.opacity(0.45))
                     }
                 }
                 .padding(.horizontal, 14)
-                .padding(.vertical, 10)
+                .padding(.vertical, 12)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(UIColor.systemBackground).opacity(0.92))
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(isDarkMode ? Color(red: 0.09, green: 0.11, blue: 0.15).opacity(0.96) : Color.white.opacity(0.97))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color(red: 0.0, green: 0.65, blue: 1.0).opacity(0.6), lineWidth: 1.5)
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(isDarkMode ? Color.cyan.opacity(0.4) : Color.black.opacity(0.12), lineWidth: 1.5)
                         )
-                        .shadow(color: .black.opacity(0.5), radius: 10, x: 0, y: 5)
+                        .shadow(color: isDarkMode ? Color.black.opacity(0.6) : Color.black.opacity(0.15), radius: 12, x: 0, y: 6)
                 )
             }
         } else {
-            // THANH TÌM KIẾM ĐỊA ĐIỂM + CHIP ĐIỂM ĐẾN NHANH
+            // THANH TÌM KIẾM ĐỊA ĐIỂM + CHIP GỢI Ý
             VStack(spacing: 8) {
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
-                        .foregroundColor(.cyan)
+                        .foregroundColor(isDarkMode ? .cyan : .blue)
                         .font(.system(size: 16, weight: .bold))
-                    
+
                     TextField("Tìm điểm đến (Sân bay, Bến Thành...)", text: $searchQuery)
-                        .foregroundColor(.white)
+                        .foregroundColor(isDarkMode ? .white : .black)
                         .font(.subheadline)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
@@ -150,30 +160,30 @@ public struct VietmapNavigationScreen: View {
                             let loc = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
                             navManager.searchPlaces(query: query, userLocation: loc)
                         }
-                    
+
                     if !searchQuery.isEmpty {
                         Button(action: {
                             searchQuery = ""
                             navManager.searchResults = []
                         }) {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.gray)
+                                .foregroundColor(isDarkMode ? .gray : Color.black.opacity(0.4))
                         }
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
                 .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.black.opacity(0.82))
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(isDarkMode ? Color(red: 0.09, green: 0.11, blue: 0.15).opacity(0.92) : Color.white.opacity(0.96))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(isDarkMode ? Color.white.opacity(0.18) : Color.black.opacity(0.12), lineWidth: 1)
                         )
-                        .shadow(color: .black.opacity(0.4), radius: 8)
+                        .shadow(color: isDarkMode ? Color.black.opacity(0.5) : Color.black.opacity(0.12), radius: 8, y: 3)
                 )
-                
-                // GỢI Ý ĐIỂM ĐẾN PHỔ BIẾN (KHI CHƯA GÕ TÌM KIẾM)
+
+                // GỢI Ý ĐIỂM ĐẾN PHỔ BIẾN
                 if searchQuery.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
@@ -188,17 +198,18 @@ public struct VietmapNavigationScreen: View {
                                             .font(.caption2)
                                         Text(item.0)
                                             .font(.caption)
-                                            .fontWeight(.medium)
+                                            .fontWeight(.bold)
                                     }
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(Color.black.opacity(0.75))
-                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 11)
+                                    .padding(.vertical, 7)
+                                    .background(isDarkMode ? Color.black.opacity(0.75) : Color.white.opacity(0.92))
+                                    .foregroundColor(isDarkMode ? .white : Color(red: 0.1, green: 0.12, blue: 0.15))
                                     .cornerRadius(12)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.cyan.opacity(0.5), lineWidth: 0.8)
+                                            .stroke(isDarkMode ? Color.cyan.opacity(0.4) : Color.blue.opacity(0.3), lineWidth: 1)
                                     )
+                                    .shadow(color: Color.black.opacity(0.1), radius: 4, y: 2)
                                 }
                             }
                         }
@@ -207,8 +218,8 @@ public struct VietmapNavigationScreen: View {
             }
         }
     }
-    
-    // MARK: - DROPDOWN DANH SÁCH KẾT QUẢ TÌM KIẾM
+
+    // MARK: - DROPDOWN KẾT QUẢ TÌM KIẾM
     private var searchResultsDropdown: some View {
         VStack(spacing: 0) {
             ScrollView {
@@ -220,60 +231,60 @@ public struct VietmapNavigationScreen: View {
                             HStack(spacing: 12) {
                                 Image(systemName: "car.circle.fill")
                                     .font(.title2)
-                                    .foregroundColor(.cyan)
-                                
+                                    .foregroundColor(isDarkMode ? .cyan : .blue)
+
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(item.name ?? "Điểm đến")
                                         .font(.subheadline)
                                         .fontWeight(.bold)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(isDarkMode ? .white : .black)
                                         .lineLimit(1)
-                                    
+
                                     if let title = item.placemark.title {
                                         Text(title)
                                             .font(.caption2)
-                                            .foregroundColor(.gray)
+                                            .foregroundColor(isDarkMode ? .gray : Color(red: 0.4, green: 0.42, blue: 0.45))
                                             .lineLimit(1)
                                     }
                                 }
-                                
+
                                 Spacer()
-                                
+
                                 Text("Chỉ đường")
                                     .font(.caption)
                                     .fontWeight(.bold)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(Color.cyan)
-                                    .foregroundColor(.black)
+                                    .padding(.horizontal, 11)
+                                    .padding(.vertical, 6)
+                                    .background(isDarkMode ? Color.cyan : Color.blue)
+                                    .foregroundColor(isDarkMode ? .black : .white)
                                     .cornerRadius(8)
                             }
                             .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 11)
                         }
-                        Divider().background(Color.white.opacity(0.1))
+                        Divider().background(isDarkMode ? Color.white.opacity(0.1) : Color.black.opacity(0.08))
                     }
                 }
             }
             .frame(maxHeight: 220)
         }
         .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.black.opacity(0.92))
+            RoundedRectangle(cornerRadius: 16)
+                .fill(isDarkMode ? Color(red: 0.09, green: 0.11, blue: 0.15).opacity(0.96) : Color.white.opacity(0.98))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.cyan.opacity(0.6), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(isDarkMode ? Color.cyan.opacity(0.5) : Color.blue.opacity(0.3), lineWidth: 1)
                 )
-                .shadow(color: .black.opacity(0.6), radius: 10)
+                .shadow(color: isDarkMode ? Color.black.opacity(0.6) : Color.black.opacity(0.18), radius: 12, y: 4)
         )
     }
-    
-    // MARK: - BOTTOM CONTROLS SECTION (WIDGET TỐC ĐỘ VIETMAP + NÚT MAP)
+
+    // MARK: - BOTTOM CONTROLS SECTION (WIDGET TỐC ĐỘ + NÚT BẢN ĐỒ)
     private var bottomControlsSection: some View {
         HStack(alignment: .bottom, spacing: 12) {
-            // CỤM WIDGET TỐC ĐỘ PHONG CÁCH VIETMAP ĐẶC TRƯNG
+            // CỤM WIDGET TỐC ĐỘ PHONG CÁCH VIETMAP
             VStack(alignment: .leading, spacing: 8) {
-                // TÊN ĐƯỜNG HIỆN TẠI (BADGE TRÊN CỤM ĐỒNG HỒ)
+                // TÊN ĐƯỜNG HIỆN TẠI
                 HStack(spacing: 6) {
                     Image(systemName: "location.fill")
                         .font(.caption2)
@@ -281,21 +292,22 @@ public struct VietmapNavigationScreen: View {
                     Text(tracker.roadName)
                         .font(.caption)
                         .fontWeight(.bold)
-                        .foregroundColor(.white)
+                        .foregroundColor(isDarkMode ? .white : Color(red: 0.08, green: 0.1, blue: 0.12))
                         .lineLimit(1)
                 }
                 .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Color.black.opacity(0.85))
-                .cornerRadius(8)
+                .padding(.vertical, 6)
+                .background(isDarkMode ? Color.black.opacity(0.85) : Color.white.opacity(0.95))
+                .cornerRadius(9)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 0.8)
+                    RoundedRectangle(cornerRadius: 9)
+                        .stroke(isDarkMode ? Color.white.opacity(0.2) : Color.black.opacity(0.12), lineWidth: 0.8)
                 )
-                
+                .shadow(color: Color.black.opacity(0.15), radius: 4, y: 2)
+
                 // HÀNG BIỂN BÁO & ĐỒNG HỒ TỐC ĐỘ
                 HStack(spacing: 10) {
-                    // 1. BIỂN BÁO GIỚI HẠN TỐC ĐỘ (Vòng tròn viền đỏ)
+                    // 1. BIỂN BÁO GIỚI HẠN TỐC ĐỘ (Vòng tròn viền đỏ chuẩn)
                     if let limit = tracker.speedLimit {
                         ZStack {
                             Circle()
@@ -304,8 +316,8 @@ public struct VietmapNavigationScreen: View {
                                 .overlay(
                                     Circle().stroke(Color.red, lineWidth: 8)
                                 )
-                                .shadow(color: .black.opacity(0.4), radius: 6)
-                            
+                                .shadow(color: .black.opacity(0.35), radius: 6, y: 3)
+
                             Text("\(limit)")
                                 .font(.system(size: 28, weight: .black, design: .rounded))
                                 .foregroundColor(.black)
@@ -313,7 +325,7 @@ public struct VietmapNavigationScreen: View {
                     } else {
                         ZStack {
                             Circle()
-                                .fill(Color.black.opacity(0.7))
+                                .fill(isDarkMode ? Color.black.opacity(0.7) : Color.white.opacity(0.9))
                                 .frame(width: 68, height: 68)
                                 .overlay(
                                     Circle().stroke(Color.gray.opacity(0.5), lineWidth: 3)
@@ -324,14 +336,14 @@ public struct VietmapNavigationScreen: View {
                                 .foregroundColor(.gray)
                         }
                     }
-                    
+
                     // 2. ĐỒNG HỒ ĐO TỐC ĐỘ THỰC TẾ
                     VStack(spacing: -2) {
                         Text("\(tracker.currentSpeed)")
                             .font(.system(size: 44, weight: .black, design: .rounded))
-                            .foregroundColor(tracker.isOverSpeed ? .yellow : .white)
-                            .shadow(color: tracker.isOverSpeed ? .red : .clear, radius: 10)
-                        
+                            .foregroundColor(tracker.isOverSpeed ? .red : (isDarkMode ? .white : Color(red: 0.05, green: 0.08, blue: 0.12)))
+                            .shadow(color: tracker.isOverSpeed ? .red.opacity(0.5) : .clear, radius: 8)
+
                         Text("km/h")
                             .font(.system(size: 11, weight: .heavy))
                             .foregroundColor(.gray)
@@ -339,14 +351,15 @@ public struct VietmapNavigationScreen: View {
                     .frame(minWidth: 70)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Color.black.opacity(0.85))
+                    .background(isDarkMode ? Color.black.opacity(0.85) : Color.white.opacity(0.95))
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(tracker.isOverSpeed ? Color.red : Color.white.opacity(0.2), lineWidth: tracker.isOverSpeed ? 2 : 1)
+                            .stroke(tracker.isOverSpeed ? Color.red : (isDarkMode ? Color.white.opacity(0.2) : Color.black.opacity(0.12)), lineWidth: tracker.isOverSpeed ? 2 : 1)
                     )
+                    .shadow(color: Color.black.opacity(0.15), radius: 5, y: 2)
                 }
-                
+
                 // 3. BIỂN PHỤ (KHU DÂN CƯ / CAO TỐC)
                 if let road = tracker.currentRoad {
                     HStack(spacing: 6) {
@@ -358,7 +371,7 @@ public struct VietmapNavigationScreen: View {
                             .tracking(1.0)
                             .foregroundColor(.black)
                     }
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 9)
                     .padding(.vertical, 4)
                     .background(Color.white)
                     .cornerRadius(6)
@@ -366,9 +379,10 @@ public struct VietmapNavigationScreen: View {
                         RoundedRectangle(cornerRadius: 6)
                             .stroke(Color.black, lineWidth: 1.5)
                     )
+                    .shadow(color: Color.black.opacity(0.2), radius: 4, y: 2)
                 }
-                
-                // 4. CẢNH BÁO CAMERA PHẠT NGUỘI NỔI BẬT
+
+                // 4. CẢNH BÁO CAMERA PHẠT NGUỘI
                 if let cam = tracker.activeCamera {
                     HStack(spacing: 6) {
                         Image(systemName: "camera.fill")
@@ -385,54 +399,78 @@ public struct VietmapNavigationScreen: View {
                     .shadow(color: .orange.opacity(0.5), radius: 6)
                 }
             }
-            
+
             Spacer()
-            
-            // CỤM NÚT ĐIỀU KHIỂN BẢN ĐỒ BÊN PHẢI
-            VStack(spacing: 12) {
+
+            // CỤM NÚT ĐIỀU KHIỂN BẢN ĐỒ BÊN PHẢI (2D/3D + SÁNG/TỐI + ĐỊNH TÂM)
+            VStack(spacing: 10) {
+                // Nút chuyển chế độ Sáng ☀️ / Tối 🌙 trực tiếp trên bản đồ
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        isDarkMode.toggle()
+                    }
+                }) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(isDarkMode ? Color.black.opacity(0.85) : Color.white.opacity(0.95))
+                            .frame(width: 46, height: 46)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(isDarkMode ? Color.yellow.opacity(0.6) : Color.orange.opacity(0.5), lineWidth: 1)
+                            )
+                            .shadow(color: Color.black.opacity(0.15), radius: 4, y: 2)
+
+                        Image(systemName: isDarkMode ? "moon.stars.fill" : "sun.max.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(isDarkMode ? .yellow : .orange)
+                    }
+                }
+
                 // Nút chuyển 2D / 3D
                 Button(action: {
-                    withAnimation {
+                    withAnimation(.easeInOut(duration: 0.2)) {
                         is3DMode.toggle()
                     }
                 }) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black.opacity(0.85))
+                            .fill(isDarkMode ? Color.black.opacity(0.85) : Color.white.opacity(0.95))
                             .frame(width: 46, height: 46)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.cyan.opacity(0.6), lineWidth: 1)
+                                    .stroke(isDarkMode ? Color.cyan.opacity(0.6) : Color.blue.opacity(0.4), lineWidth: 1)
                             )
-                        
+                            .shadow(color: Color.black.opacity(0.15), radius: 4, y: 2)
+
                         Text(is3DMode ? "3D" : "2D")
                             .font(.system(size: 14, weight: .black))
-                            .foregroundColor(.cyan)
+                            .foregroundColor(isDarkMode ? .cyan : .blue)
                     }
                 }
-                
+
                 // Nút Định tâm lại xe (Recenter & Follow Heading)
                 Button(action: {
                     recenterTrigger += 1
                 }) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black.opacity(0.85))
+                            .fill(isDarkMode ? Color.black.opacity(0.85) : Color.white.opacity(0.95))
                             .frame(width: 46, height: 46)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                    .stroke(isDarkMode ? Color.white.opacity(0.3) : Color.black.opacity(0.15), lineWidth: 1)
                             )
-                        
+                            .shadow(color: Color.black.opacity(0.15), radius: 4, y: 2)
+
                         Image(systemName: "location.north.line.fill")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(isDarkMode ? .white : Color(red: 0.1, green: 0.12, blue: 0.15))
                     }
                 }
             }
         }
     }
-    
+
     // MARK: - KHỞI TẠO LỘ TRÌNH DẪN ĐƯỜNG
     private func startNavigatingTo(item: MKMapItem) {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)

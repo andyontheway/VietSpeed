@@ -14,6 +14,7 @@ public enum AppViewMode: String, CaseIterable {
 
 public struct ContentView: View {
     @StateObject private var tracker = SpeedTracker.shared
+    @AppStorage("is_dark_mode") private var isDarkMode: Bool = true
     @State private var showSettings = false
     @State private var selectedMode: AppViewMode = .hud
     @Environment(\.scenePhase) private var scenePhase
@@ -22,15 +23,21 @@ public struct ContentView: View {
 
     public var body: some View {
         ZStack {
-            // NỀN CỦA GIAO DIỆN
+            // NỀN CỦA GIAO DIỆN THEO CHẾ ĐỘ SÁNG / TỐI
             if selectedMode == .hud {
-                // Nền đen OLED tiết kiệm pin, chớp đỏ cảnh báo khi vượt tốc độ
-                Color(tracker.isOverSpeed ? .systemRed : .black)
-                    .opacity(tracker.isOverSpeed ? 0.9 : 1.0)
-                    .ignoresSafeArea()
-                    .animation(.easeInOut(duration: 0.3), value: tracker.isOverSpeed)
+                if isDarkMode {
+                    Color(tracker.isOverSpeed ? .systemRed : .black)
+                        .opacity(tracker.isOverSpeed ? 0.9 : 1.0)
+                        .ignoresSafeArea()
+                        .animation(.easeInOut(duration: 0.3), value: tracker.isOverSpeed)
+                } else {
+                    Color(tracker.isOverSpeed ? Color(red: 1.0, green: 0.9, blue: 0.9) : Color(red: 0.94, green: 0.95, blue: 0.97))
+                        .ignoresSafeArea()
+                        .animation(.easeInOut(duration: 0.3), value: tracker.isOverSpeed)
+                }
             } else {
-                Color.black.ignoresSafeArea()
+                (isDarkMode ? Color.black : Color(red: 0.95, green: 0.96, blue: 0.98))
+                    .ignoresSafeArea()
             }
 
             VStack(spacing: 0) {
@@ -43,11 +50,11 @@ public struct ContentView: View {
                             .frame(width: 6, height: 6)
                         Text(tracker.isSimulating ? "Demo" : "Offline")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(isDarkMode ? .white : Color(red: 0.1, green: 0.12, blue: 0.15))
                     }
                     .padding(.horizontal, 7)
                     .padding(.vertical, 6)
-                    .background(Color.white.opacity(0.12))
+                    .background(isDarkMode ? Color.white.opacity(0.12) : Color.black.opacity(0.06))
                     .cornerRadius(8)
 
                     // BỘ CHUYỂN ĐỔI CHẾ ĐỘ: HUD TỐC ĐỘ <-> BẢN ĐỒ VIETMAP
@@ -66,21 +73,40 @@ public struct ContentView: View {
                                 }
                                 .padding(.horizontal, 9)
                                 .padding(.vertical, 6)
-                                .background(selectedMode == mode ? Color.cyan : Color.clear)
-                                .foregroundColor(selectedMode == mode ? .black : .white.opacity(0.8))
+                                .background(selectedMode == mode ? (isDarkMode ? Color.cyan : Color.blue) : Color.clear)
+                                .foregroundColor(selectedMode == mode ? (isDarkMode ? .black : .white) : (isDarkMode ? .white.opacity(0.8) : Color.black.opacity(0.65)))
                                 .cornerRadius(7)
                             }
                         }
                     }
                     .padding(2)
-                    .background(Color.black.opacity(0.6))
+                    .background(isDarkMode ? Color.black.opacity(0.6) : Color.black.opacity(0.06))
                     .cornerRadius(9)
                     .overlay(
                         RoundedRectangle(cornerRadius: 9)
-                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                            .stroke(isDarkMode ? Color.white.opacity(0.18) : Color.black.opacity(0.1), lineWidth: 1)
                     )
 
                     Spacer()
+
+                    // NÚT CHUYỂN SÁNG / TỐI NHANH TRÊN HEADER
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isDarkMode.toggle()
+                        }
+                    }) {
+                        Image(systemName: isDarkMode ? "moon.stars.fill" : "sun.max.fill")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(isDarkMode ? .yellow : .orange)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 6)
+                            .background(isDarkMode ? Color.yellow.opacity(0.2) : Color.orange.opacity(0.15))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(isDarkMode ? Color.yellow.opacity(0.5) : Color.orange.opacity(0.4), lineWidth: 1)
+                            )
+                            .cornerRadius(8)
+                    }
 
                     // NÚT TEST DEMO
                     Button(action: {
@@ -89,18 +115,18 @@ public struct ContentView: View {
                         HStack(spacing: 3) {
                             Image(systemName: tracker.isSimulating ? "stop.fill" : "play.fill")
                                 .font(.system(size: 9))
-                                .foregroundColor(tracker.isSimulating ? .yellow : .green)
+                                .foregroundColor(tracker.isSimulating ? .yellow : (isDarkMode ? .green : .blue))
                             Text(tracker.isSimulating ? "Dừng" : "Test")
                                 .font(.system(size: 10, weight: .bold))
                         }
                         .padding(.horizontal, 7)
                         .padding(.vertical, 6)
-                        .background(tracker.isSimulating ? Color.orange.opacity(0.3) : Color.blue.opacity(0.3))
+                        .background(tracker.isSimulating ? Color.orange.opacity(0.3) : (isDarkMode ? Color.blue.opacity(0.3) : Color.blue.opacity(0.12)))
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(tracker.isSimulating ? Color.orange : Color.blue, lineWidth: 1)
                         )
-                        .foregroundColor(.white)
+                        .foregroundColor(isDarkMode ? .white : Color.blue)
                         .cornerRadius(8)
                     }
 
@@ -117,12 +143,12 @@ public struct ContentView: View {
                         }
                         .padding(.horizontal, 7)
                         .padding(.vertical, 6)
-                        .background(tracker.isDynamicIslandActive ? Color.green.opacity(0.25) : Color.white.opacity(0.08))
+                        .background(tracker.isDynamicIslandActive ? Color.green.opacity(0.25) : (isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.05)))
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(tracker.isDynamicIslandActive ? Color.green : Color.gray.opacity(0.4), lineWidth: 1)
                         )
-                        .foregroundColor(.white)
+                        .foregroundColor(isDarkMode ? .white : Color(red: 0.1, green: 0.12, blue: 0.15))
                         .cornerRadius(8)
                     }
 
@@ -132,9 +158,9 @@ public struct ContentView: View {
                     }) {
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(isDarkMode ? .white : Color(red: 0.1, green: 0.12, blue: 0.15))
                             .padding(6)
-                            .background(Color.white.opacity(0.15))
+                            .background(isDarkMode ? Color.white.opacity(0.15) : Color.black.opacity(0.08))
                             .clipShape(Circle())
                     }
                 }
@@ -146,7 +172,7 @@ public struct ContentView: View {
                 if selectedMode == .hud {
                     hudSpeedView
                 } else {
-                    VietmapNavigationScreen(tracker: tracker)
+                    VietmapNavigationScreen(tracker: tracker, isDarkMode: $isDarkMode)
                 }
             }
         }
@@ -159,7 +185,7 @@ public struct ContentView: View {
         }
     }
 
-    // MARK: - GIAO DIỆN CHUYÊN DỤNG HUD TỐC ĐỘ (OLED MINIMAL)
+    // MARK: - GIAO DIỆN CHUYÊN DỤNG HUD TỐC ĐỘ (DAY / NIGHT ADAPTIVE)
     private var hudSpeedView: some View {
         VStack(spacing: 0) {
             // TÊN ĐƯỜNG HIỆN TẠI & THÔNG TIN GPS THỰC TẾ
@@ -171,7 +197,7 @@ public struct ContentView: View {
                     Text(tracker.roadName)
                         .font(.headline)
                         .fontWeight(.bold)
-                        .foregroundColor(.white)
+                        .foregroundColor(isDarkMode ? .white : Color(red: 0.05, green: 0.08, blue: 0.12))
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
                 }
@@ -183,19 +209,24 @@ public struct ContentView: View {
                         .frame(width: 6, height: 6)
                     Text(tracker.gpsStatusText)
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.gray)
+                        .foregroundColor(isDarkMode ? .gray : Color.black.opacity(0.55))
 
                     if let coord = tracker.lastCoordinate {
                         Text("• \(String(format: "%.4f, %.4f", coord.latitude, coord.longitude))")
                             .font(.system(size: 11, design: .monospaced))
-                            .foregroundColor(.gray.opacity(0.8))
+                            .foregroundColor(isDarkMode ? Color.gray.opacity(0.8) : Color.black.opacity(0.45))
                     }
                 }
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 10)
-            .background(Color.white.opacity(0.08))
+            .background(isDarkMode ? Color.white.opacity(0.08) : Color.white)
             .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isDarkMode ? Color.white.opacity(0.1) : Color.black.opacity(0.08), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(isDarkMode ? 0.3 : 0.06), radius: 6, y: 3)
             .padding(.top, 12)
 
             Spacer(minLength: 20)
@@ -204,18 +235,18 @@ public struct ContentView: View {
             VStack(spacing: -8) {
                 Text("\(tracker.currentSpeed)")
                     .font(.system(size: 115, weight: .black, design: .rounded))
-                    .foregroundColor(tracker.isOverSpeed ? .yellow : .white)
+                    .foregroundColor(tracker.isOverSpeed ? (isDarkMode ? .yellow : .red) : (isDarkMode ? .white : Color(red: 0.05, green: 0.08, blue: 0.12)))
                     .shadow(color: tracker.isOverSpeed ? .red : .clear, radius: 25)
 
                 Text("km/h")
                     .font(.title3)
                     .fontWeight(.bold)
-                    .foregroundColor(.gray)
+                    .foregroundColor(isDarkMode ? .gray : Color.black.opacity(0.5))
             }
 
             Spacer(minLength: 24)
 
-            // BIỂN BÁO CHÍNH (Vòng tròn viền đỏ) & CAMERA
+            // BIỂN BÁO CHÍNH (Vòng tròn viền đỏ chuẩn VN) & CAMERA
             HStack(spacing: 28) {
                 if let limit = tracker.speedLimit {
                     ZStack {
@@ -225,7 +256,7 @@ public struct ContentView: View {
                             .overlay(
                                 Circle().stroke(Color.red, lineWidth: 16)
                             )
-                            .shadow(color: .black.opacity(0.5), radius: 10, x: 0, y: 5)
+                            .shadow(color: .black.opacity(isDarkMode ? 0.5 : 0.2), radius: 10, x: 0, y: 5)
 
                         Text("\(limit)")
                             .font(.system(size: 54, weight: .black, design: .rounded))
@@ -234,7 +265,7 @@ public struct ContentView: View {
                 } else {
                     ZStack {
                         Circle()
-                            .stroke(Color.gray.opacity(0.4), lineWidth: 4)
+                            .stroke(isDarkMode ? Color.gray.opacity(0.4) : Color.black.opacity(0.2), lineWidth: 4)
                             .frame(width: 110, height: 110)
                         Text("--")
                             .font(.title)
@@ -299,7 +330,7 @@ public struct ContentView: View {
                     .frame(width: 8, height: 8)
                 Text(tracker.isSimulating ? "Đang chạy Test Demo • Bấm 'Dừng' để quay lại GPS thật" : "Đang chạy ngầm Offline • Tương thích Google Maps")
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(isDarkMode ? .white.opacity(0.7) : Color.black.opacity(0.6))
             }
             .padding(.bottom, 20)
         }

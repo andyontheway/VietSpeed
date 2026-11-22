@@ -4,6 +4,7 @@ public struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
     // Lưu các cấu hình vào bộ nhớ máy (UserDefaults) để giữ nguyên sau khi tắt app
+    @AppStorage("is_dark_mode") private var isDarkMode: Bool = true
     @AppStorage("selected_vehicle") private var selectedVehicleRaw: String = VehicleType.car.rawValue
     @AppStorage("speed_tolerance") private var speedTolerance: Int = 0 // Dung sai vượt quá: 0, 5, 10 km/h
     @AppStorage("voice_alert_enabled") private var voiceAlertEnabled: Bool = true
@@ -23,6 +24,22 @@ public struct SettingsView: View {
     public var body: some View {
         NavigationStack {
             Form {
+                // 0. CHẾ ĐỘ HIỂN THỊ (SÁNG / TỐI)
+                Section(header: Label("Giao diện hiển thị", systemImage: "circle.righthalf.filled")) {
+                    Picker("Chế độ màu", selection: $isDarkMode) {
+                        HStack {
+                            Image(systemName: "moon.stars.fill")
+                            Text("Chế độ Tối (Ban đêm / OLED)")
+                        }.tag(true)
+
+                        HStack {
+                            Image(systemName: "sun.max.fill")
+                            Text("Chế độ Sáng (Ban ngày)")
+                        }.tag(false)
+                    }
+                    .pickerStyle(.inline)
+                }
+
                 // 1. CHỌN LOẠI PHƯƠNG TIỆN (Quan trọng theo luật giao thông VN)
                 Section(header: Label("Phương tiện lưu thông", systemImage: "car.2.fill")) {
                     ForEach(VehicleType.allCases) { vehicle in
