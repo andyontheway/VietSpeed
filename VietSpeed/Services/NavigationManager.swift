@@ -55,7 +55,7 @@ public final class NavigationManager: NSObject, ObservableObject {
         super.init()
     }
 
-    /// Tìm kiếm địa điểm (Nếu là Link Google Maps thì tự động phân tích toạ độ, nếu từ khoá thì tìm nhanh)
+    /// Tìm kiếm địa điểm (Ưu tiên toạ độ GPS trước, sau đó tới link Google Maps hoặc từ khoá)
     public func searchPlaces(query: String, userLocation: CLLocationCoordinate2D? = nil) {
         currentSearch?.cancel()
         currentSearch = nil
@@ -67,10 +67,32 @@ public final class NavigationManager: NSObject, ObservableObject {
             return
         }
 
-        // 🌟 NẾU LÀ LIÊN KẾT GOOGLE MAPS HOẶC TOẠ ĐỘ: BÓC TÁCH NGAY
+        // 🌟 1. ƯU TIÊN SỐ 1: PHÂN TÍCH TOẠ ĐỘ GPS TRỰC TIẾP (10.7769, 106.7009 hoặc DMS)
+        if let parsed = CoordinateParser.shared.parse(trimmed) {
+            let lat = parsed.coordinate.latitude
+            let lon = parsed.coordinate.longitude
+
+            // Tìm tên đường gần nhất từ cơ sở dữ liệu offline để tài xế dễ nhận biết
+            let road = DatabaseManager.shared.findNearestRoad(lat: lat, lon: lon)
+            let roadName = road?.name ?? "Điểm toạ độ GPS"
+
+            let item = PlaceSearchResult(
+                id: parsed.formattedString,
+                title: "📍 \(roadName)",
+                subtitle: "Toạ độ: \(parsed.formattedString)",
+                isGoogleLink: false,
+                coordinate: parsed.coordinate,
+                mapItem: nil
+            )
+            self.searchResults = [item]
+            self.isSearching = false
+            return
+        }
+
+        // 🌟 2. NẾU LÀ LIÊN KẾT GOOGLE MAPS: BÓC TÁCH TOẠ ĐỘ
         if GoogleMapsLinkResolver.shared.containsGoogleMapsLinkOrCoordinate(trimmed) {
             isResolvingLink = true
-            resolvingStatusText = "Đang phân tích liên kết Google Maps..."
+            resolvingStatusText = "Đang phân tích toạ độ từ link..."
 
             GoogleMapsLinkResolver.shared.resolve(text: trimmed) { [weak self] result in
                 guard let self = self else { return }
@@ -89,14 +111,14 @@ public final class NavigationManager: NSObject, ObservableObject {
                     )
                     self.searchResults = [item]
                 case .failure(let error):
-                    print("⚠️ Không bóc tách được link: \(error.localizedDescription)")
+                    print("⚠️ Không bóc tách được: \(error.localizedDescription)")
                     self.searchResults = []
                 }
             }
             return
         }
 
-        // TÌM KIẾM MẶC ĐỊNH BẰNG APPLE MAPKIT
+        // 3. TÌM KIẾM MẶC ĐỊNH BẰNG APPLE MAPKIT
         isSearching = true
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = trimmed
@@ -130,12 +152,36 @@ public final class NavigationManager: NSObject, ObservableObject {
         }
     }
 
-    /// Khởi chạy dẫn đường từ liên kết Google Maps (Dán link)
-    public func resolveLinkAndNavigate(text: String, startCoord: CLLocationCoordinate2D, completion: ((Bool) -> Void)? = nil) {
-        isResolvingLink = true
-        resolvingStatusText = "Đang mở điểm đến từ Google Maps..."
+    /// Dẫn đường trực tiếp đến toạ độ GPS
+    public func navigateToCoordinate(
+        coordinate: CLLocationCoordinate2D,
+        customTitle: String? = nil,
+        startCoord: CLLocationCoordinate2D,
+        completion: ((Bool) -> Void)? = nil
+    ) {
+        let road = DatabaseManager.shared.findNearestRoad(lat: coordinate.latitude, lon: coordinate.longitude)
+        let title = customTitle ?? road?.name ?? String(format: "Toạ độ %.4f, %.4f", coordinate.latitude, coordinate.longitude)
 
-        GoogleMapsLinkResolver.shared.resolve(text: text) { [weak self] result in
+        let placemark = MKPlacemark(coordinate: coordinate)
+        let mapItem = MKMapItem(placemark: placemark)
+        mapItem.name = title
+
+        self.destinationCoordinate = coordinate
+        self.calculateRoute(from: startCoord, to: mapItem, completion: completion)
+    }
+
+    /// Khởi chạy dẫn đường từ chuỗi toạ độ hoặc liên kết (Dán toạ độ / link)
+    public func resolveLinkAndNavigate(text: String, startCoord: CLLocationCoordinate2D, completion: ((Bool) -> Void)? = nil) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let parsed = CoordinateParser.shared.parse(trimmed) {
+            navigateToCoordinate(coordinate: parsed.coordinate, customTitle: nil, startCoord: startCoord, completion: completion)
+            return
+        }
+
+        isResolvingLink = true
+        resolvingStatusText = "Đang phân tích toạ độ..."
+
+        GoogleMapsLinkResolver.shared.resolve(text: trimmed) { [weak self] result in
             guard let self = self else { return }
             self.isResolvingLink = false
             self.resolvingStatusText = nil
@@ -148,7 +194,7 @@ public final class NavigationManager: NSObject, ObservableObject {
                 self.destinationCoordinate = info.coordinate
                 self.calculateRoute(from: startCoord, to: mapItem, completion: completion)
             case .failure(let error):
-                print("❌ Lỗi phân tích link: \(error.localizedDescription)")
+                print("❌ Lỗi phân tích: \(error.localizedDescription)")
                 completion?(false)
             }
         }
@@ -161,11 +207,7 @@ public final class NavigationManager: NSObject, ObservableObject {
         completion: ((Bool) -> Void)? = nil
     ) {
         if let coord = item.coordinate {
-            let placemark = MKPlacemark(coordinate: coord)
-            let mapItem = MKMapItem(placemark: placemark)
-            mapItem.name = item.title
-            self.destinationCoordinate = coord
-            self.calculateRoute(from: startCoord, to: mapItem, completion: completion)
+            navigateToCoordinate(coordinate: coord, customTitle: item.title, startCoord: startCoord, completion: completion)
         } else if let mapItem = item.mapItem {
             self.destinationCoordinate = mapItem.placemark.coordinate
             self.calculateRoute(from: startCoord, to: mapItem, completion: completion)

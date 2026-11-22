@@ -10,8 +10,9 @@ public struct VietmapNavigationScreen: View {
     @State private var is3DMode: Bool = true
     @State private var recenterTrigger: Int = 0
     @State private var searchQuery: String = ""
-    @State private var clipboardLink: String? = nil
+    @State private var clipboardContent: String? = nil
     @State private var showClipboardBanner: Bool = false
+    @State private var showCoordinateModal: Bool = false
 
     public init(tracker: SpeedTracker, isDarkMode: Binding<Bool>) {
         self.tracker = tracker
@@ -20,10 +21,10 @@ public struct VietmapNavigationScreen: View {
 
     // Các điểm đến gợi ý nhanh
     private let quickDestinations = [
-        ("Sân bay Tân Sơn Nhất", "Sân bay Tân Sơn Nhất, TP.HCM"),
-        ("Chợ Bến Thành", "Chợ Bến Thành, Quận 1"),
-        ("Cao tốc Long Thành", "Nút giao An Phú, Cao tốc TP.HCM - Long Thành"),
-        ("TP. Vũng Tàu", "Thành phố Vũng Tàu, Bà Rịa - Vũng Tàu")
+        ("Sân bay Tân Sơn Nhất", "10.8184, 106.6588"),
+        ("Chợ Bến Thành", "10.7725, 106.6980"),
+        ("Cao tốc Long Thành", "10.7937, 106.7570"),
+        ("TP. Vũng Tàu", "10.3460, 107.0843")
     ]
 
     public var body: some View {
@@ -45,20 +46,20 @@ public struct VietmapNavigationScreen: View {
                     .padding(.horizontal, 14)
                     .padding(.top, 4)
 
-                // THÔNG BÁO TỰ ĐỘNG PHÁT HIỆN LINK GOOGLE MAPS TỪ BỘ NHỚ TẠM (CLIPBOARD)
-                if showClipboardBanner && !navManager.isNavigating, let clip = clipboardLink {
+                // THÔNG BÁO TỰ ĐỘNG PHÁT HIỆN TOẠ ĐỘ TRONG BỘ NHỚ TẠM (CLIPBOARD)
+                if showClipboardBanner && !navManager.isNavigating, let clip = clipboardContent {
                     clipboardDetectedCard(clip: clip)
                         .padding(.horizontal, 14)
                         .padding(.top, 6)
                 }
 
-                // TIẾN TRÌNH ĐANG PHÂN TÍCH LINK GOOGLE MAPS
+                // TIẾN TRÌNH ĐANG PHÂN TÍCH TOẠ ĐỘ
                 if navManager.isResolvingLink {
                     HStack(spacing: 8) {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: isDarkMode ? .cyan : .blue))
                             .scaleEffect(0.8)
-                        Text(navManager.resolvingStatusText ?? "Đang phân tích toạ độ Google Maps...")
+                        Text(navManager.resolvingStatusText ?? "Đang phân tích toạ độ GPS...")
                             .font(.caption)
                             .fontWeight(.medium)
                             .foregroundColor(isDarkMode ? .white : Color(red: 0.1, green: 0.12, blue: 0.15))
@@ -70,7 +71,7 @@ public struct VietmapNavigationScreen: View {
                     .padding(.top, 6)
                 }
 
-                // DANH SÁCH GỢI Ý TÌM KIẾM (KHI ĐANG GÕ)
+                // DANH SÁCH GỢI Ý TÌM KIẾM (KHI ĐANG GÕ TOẠ ĐỘ HOẶC TÊN ĐỊA ĐIỂM)
                 if !navManager.searchResults.isEmpty && !navManager.isNavigating {
                     searchResultsDropdown
                         .padding(.horizontal, 14)
@@ -88,13 +89,21 @@ public struct VietmapNavigationScreen: View {
         .onAppear {
             checkClipboard()
         }
+        .sheet(isPresented: $showCoordinateModal) {
+            CoordinateInputSheet(
+                tracker: tracker,
+                navManager: navManager,
+                isDarkMode: isDarkMode,
+                isPresented: $showCoordinateModal
+            )
+        }
     }
 
-    // MARK: - TOP HEADER SECTION (BANNER DẪN ĐƯỜNG HOẶC THANH TÌM KIẾM)
+    // MARK: - TOP HEADER SECTION (BANNER DẪN ĐƯỜNG HOẶC THANH TÌM KIẾM TOẠ ĐỘ)
     @ViewBuilder
     private var topHeaderSection: some View {
         if navManager.isNavigating {
-            // BANNER CHỈ DẪN LỘ TRÌNH (TURN-BY-TURN CARD) - CHUẨN TƯƠNG PHẢN CAO
+            // BANNER CHỈ DẪN LỘ TRÌNH (TURN-BY-TURN CARD) - CHUẨN TƯƠNG PHẢN CAO KHÔNG BỊ TRẮNG MỜ
             VStack(spacing: 6) {
                 HStack(spacing: 12) {
                     // Biểu tượng rẽ hướng tiếp theo
@@ -113,7 +122,7 @@ public struct VietmapNavigationScreen: View {
                             .foregroundColor(.white)
                     }
 
-                    // Khoảng cách tới ngã rẽ và tên đường tiếp theo
+                    // Khoảng cách tới ngã rẽ và tên đường tiếp theo (Chữ đen rõ ràng trên nền sáng / Chữ trắng trên nền tối)
                     VStack(alignment: .leading, spacing: 3) {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             if !navManager.nextStepDistance.isEmpty {
@@ -135,7 +144,7 @@ public struct VietmapNavigationScreen: View {
                                 Text(navManager.remainingDistance)
                                     .font(.system(size: 12, weight: .semibold))
                             }
-                            .foregroundColor(isDarkMode ? Color.white.opacity(0.75) : Color(red: 0.35, green: 0.38, blue: 0.42))
+                            .foregroundColor(isDarkMode ? Color.white.opacity(0.85) : Color(red: 0.25, green: 0.28, blue: 0.32))
 
                             Text("•")
                                 .foregroundColor(isDarkMode ? Color.gray.opacity(0.6) : Color.gray.opacity(0.4))
@@ -159,7 +168,7 @@ public struct VietmapNavigationScreen: View {
                         }) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 26))
-                                .foregroundColor(isDarkMode ? Color.white.opacity(0.65) : Color.black.opacity(0.45))
+                                .foregroundColor(isDarkMode ? Color.white.opacity(0.7) : Color.black.opacity(0.55))
                         }
 
                         // Nút mở sang Google Maps chính thức nếu muốn
@@ -178,7 +187,7 @@ public struct VietmapNavigationScreen: View {
                 .padding(.vertical, 11)
                 .background(
                     RoundedRectangle(cornerRadius: 18)
-                        .fill(isDarkMode ? Color(red: 0.09, green: 0.11, blue: 0.15).opacity(0.96) : Color.white.opacity(0.97))
+                        .fill(isDarkMode ? Color(red: 0.09, green: 0.11, blue: 0.15).opacity(0.96) : Color.white.opacity(0.98))
                         .overlay(
                             RoundedRectangle(cornerRadius: 18)
                                 .stroke(isDarkMode ? Color.cyan.opacity(0.4) : Color.black.opacity(0.12), lineWidth: 1.5)
@@ -187,15 +196,15 @@ public struct VietmapNavigationScreen: View {
                 )
             }
         } else {
-            // THANH TÌM KIẾM ĐỊA ĐIỂM + NÚT DÁN LINK GOOGLE MAPS
+            // THANH TÌM KIẾM ĐỊA ĐIỂM + NÚT NHẬP TOẠ ĐỘ GPS
             VStack(spacing: 8) {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(isDarkMode ? .cyan : .blue)
                         .font(.system(size: 16, weight: .bold))
 
-                    TextField("Dán link Google Maps hoặc tìm điểm đến...", text: $searchQuery)
-                        .foregroundColor(isDarkMode ? .white : .black)
+                    TextField("Nhập toạ độ (vd: 10.7769, 106.7009)...", text: $searchQuery)
+                        .foregroundColor(isDarkMode ? .white : Color(red: 0.08, green: 0.1, blue: 0.12))
                         .font(.subheadline)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
@@ -203,25 +212,40 @@ public struct VietmapNavigationScreen: View {
                             let loc = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
                             navManager.searchPlaces(query: query, userLocation: loc)
                         }
+                        .onSubmit {
+                            handleDirectCoordinateSubmit(searchQuery)
+                        }
 
-                    // NÚT DÁN LINK NHANH TỪ CLIPBOARD
+                    // NÚT MỞ BẢNG NHẬP TOẠ ĐỘ CHUYÊN DỤNG
+                    Button(action: {
+                        showCoordinateModal = true
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "mappin.circle.fill")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("Toạ độ")
+                                .font(.system(size: 12, weight: .bold))
+                        }
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 6)
+                        .background(isDarkMode ? Color.cyan.opacity(0.2) : Color.blue.opacity(0.12))
+                        .foregroundColor(isDarkMode ? .cyan : .blue)
+                        .cornerRadius(8)
+                    }
+
+                    // NÚT DÁN NHANH TỪ BỘ NHỚ TẠM
                     Button(action: {
                         if let clip = UIPasteboard.general.string, !clip.isEmpty {
                             searchQuery = clip
-                            handlePasteAndNavigate(clip)
+                            handleCoordinateInputAndNavigate(clip)
                         }
                     }) {
-                        HStack(spacing: 3) {
-                            Image(systemName: "doc.on.clipboard")
-                                .font(.system(size: 10))
-                            Text("Dán link")
-                                .font(.system(size: 10, weight: .bold))
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 5)
-                        .background(isDarkMode ? Color.white.opacity(0.12) : Color.blue.opacity(0.1))
-                        .foregroundColor(isDarkMode ? .cyan : .blue)
-                        .cornerRadius(6)
+                        Image(systemName: "doc.on.clipboard.fill")
+                            .font(.system(size: 14))
+                            .padding(6)
+                            .background(isDarkMode ? Color.white.opacity(0.12) : Color.black.opacity(0.06))
+                            .foregroundColor(isDarkMode ? .white : Color.black.opacity(0.7))
+                            .cornerRadius(8)
                     }
 
                     if !searchQuery.isEmpty {
@@ -246,17 +270,15 @@ public struct VietmapNavigationScreen: View {
                         .shadow(color: isDarkMode ? Color.black.opacity(0.5) : Color.black.opacity(0.12), radius: 8, y: 3)
                 )
 
-                // GỢI Ý ĐIỂM ĐẾN PHỔ BIẾN
+                // GỢI Ý ĐIỂM ĐẾN PHỔ BIẾN BẰNG TOẠ ĐỘ
                 if searchQuery.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(quickDestinations, id: \.0) { item in
                                 Button(action: {
-                                    searchQuery = item.0
-                                    let loc = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
-                                    navManager.searchPlaces(query: item.1, userLocation: loc)
+                                    handleCoordinateInputAndNavigate(item.1)
                                 }) {
-                                    HStack(spacing: 4) {
+                                    HStack(spacing: 5) {
                                         Image(systemName: "mappin.and.ellipse")
                                             .font(.caption2)
                                         Text(item.0)
@@ -282,19 +304,28 @@ public struct VietmapNavigationScreen: View {
         }
     }
 
-    // MARK: - BANNER PHÁT HIỆN LINK TỰ ĐỘNG TỪ GOOGLE MAPS
+    // MARK: - BANNER PHÁT HIỆN TOẠ ĐỘ TỰ ĐỘNG TỪ BỘ NHỚ TẠM (CLIPBOARD)
     @ViewBuilder
     private func clipboardDetectedCard(clip: String) -> some View {
+        let parsed = CoordinateParser.shared.parse(clip)
+        let displayTitle: String = {
+            if let p = parsed {
+                let road = DatabaseManager.shared.findNearestRoad(lat: p.coordinate.latitude, lon: p.coordinate.longitude)
+                return road?.name ?? p.formattedString
+            }
+            return GoogleMapsLinkResolver.shared.extractPlaceNameFromText(clip) ?? "Toạ độ GPS mới"
+        }()
+
         HStack(spacing: 10) {
-            Image(systemName: "link.badge.plus")
+            Image(systemName: "mappin.circle.fill")
                 .foregroundColor(.green)
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: 20, weight: .bold))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Phát hiện link từ Google Maps:")
+                Text("Phát hiện toạ độ trong bộ nhớ tạm:")
                     .font(.caption2)
                     .foregroundColor(isDarkMode ? .gray : Color.black.opacity(0.6))
-                Text(GoogleMapsLinkResolver.shared.extractPlaceNameFromText(clip) ?? "Chạm để dẫn đường ngay")
+                Text(displayTitle)
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundColor(isDarkMode ? .white : Color.black)
@@ -304,13 +335,13 @@ public struct VietmapNavigationScreen: View {
             Spacer()
 
             Button(action: {
-                handlePasteAndNavigate(clip)
+                handleCoordinateInputAndNavigate(clip)
             }) {
                 Text("Dẫn đường")
                     .font(.caption)
                     .fontWeight(.bold)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
+                    .padding(.horizontal, 11)
+                    .padding(.vertical, 6)
                     .background(Color.green)
                     .foregroundColor(.white)
                     .cornerRadius(8)
@@ -347,25 +378,25 @@ public struct VietmapNavigationScreen: View {
                             startNavigatingTo(item: item)
                         }) {
                             HStack(spacing: 12) {
-                                Image(systemName: item.isGoogleLink ? "mappin.and.ellipse" : "car.circle.fill")
+                                Image(systemName: item.coordinate != nil ? "mappin.and.ellipse" : "car.circle.fill")
                                     .font(.title2)
-                                    .foregroundColor(item.isGoogleLink ? .red : (isDarkMode ? .cyan : .blue))
+                                    .foregroundColor(item.coordinate != nil ? .green : (isDarkMode ? .cyan : .blue))
 
                                 VStack(alignment: .leading, spacing: 2) {
                                     HStack(spacing: 4) {
                                         Text(item.title)
                                             .font(.subheadline)
                                             .fontWeight(.bold)
-                                            .foregroundColor(isDarkMode ? .white : .black)
+                                            .foregroundColor(isDarkMode ? .white : Color(red: 0.08, green: 0.1, blue: 0.12))
                                             .lineLimit(1)
 
-                                        if item.isGoogleLink {
-                                            Text("Google Maps")
+                                        if item.coordinate != nil {
+                                            Text("GPS")
                                                 .font(.system(size: 8, weight: .heavy))
                                                 .padding(.horizontal, 4)
                                                 .padding(.vertical, 1)
-                                                .background(Color.red.opacity(0.15))
-                                                .foregroundColor(.red)
+                                                .background(Color.green.opacity(0.18))
+                                                .foregroundColor(.green)
                                                 .cornerRadius(3)
                                         }
                                     }
@@ -373,7 +404,7 @@ public struct VietmapNavigationScreen: View {
                                     if !item.subtitle.isEmpty {
                                         Text(item.subtitle)
                                             .font(.caption2)
-                                            .foregroundColor(isDarkMode ? .gray : Color(red: 0.4, green: 0.42, blue: 0.45))
+                                            .foregroundColor(isDarkMode ? .gray : Color(red: 0.35, green: 0.38, blue: 0.42))
                                             .lineLimit(1)
                                     }
                                 }
@@ -601,8 +632,24 @@ public struct VietmapNavigationScreen: View {
         }
     }
 
-    // MARK: - HÀM XỬ LÝ DÁN LINK & DẪN ĐƯỜNG
-    private func handlePasteAndNavigate(_ text: String) {
+    // MARK: - HÀM XỬ LÝ TOẠ ĐỘ & DẪN ĐƯỜNG
+    private func handleDirectCoordinateSubmit(_ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        if let parsed = CoordinateParser.shared.parse(trimmed) {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            let startCoord = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
+            navManager.navigateToCoordinate(coordinate: parsed.coordinate, customTitle: nil, startCoord: startCoord) { success in
+                if success {
+                    searchQuery = ""
+                    recenterTrigger += 1
+                }
+            }
+        }
+    }
+
+    private func handleCoordinateInputAndNavigate(_ text: String) {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         showClipboardBanner = false
         let startCoord = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
@@ -626,15 +673,280 @@ public struct VietmapNavigationScreen: View {
     }
 
     private func checkClipboard() {
-        if let clip = UIPasteboard.general.string,
-           GoogleMapsLinkResolver.shared.containsGoogleMapsLinkOrCoordinate(clip) {
-            clipboardLink = clip
-            withAnimation(.spring()) {
-                showClipboardBanner = true
+        if let clip = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines), !clip.isEmpty {
+            if CoordinateParser.shared.parse(clip) != nil || GoogleMapsLinkResolver.shared.containsGoogleMapsLinkOrCoordinate(clip) {
+                clipboardContent = clip
+                withAnimation(.spring()) {
+                    showClipboardBanner = true
+                }
+                return
             }
+        }
+        showClipboardBanner = false
+        clipboardContent = nil
+    }
+}
+
+// MARK: - MODAL SHEET NHẬP TOẠ ĐỘ GPS TIỆN LỢI CHO TÀI XẾ
+public struct CoordinateInputSheet: View {
+    @ObservedObject var tracker: SpeedTracker
+    @ObservedObject var navManager: NavigationManager
+    let isDarkMode: Bool
+    @Binding var isPresented: Bool
+
+    @State private var inputText: String = ""
+    @State private var parsedCoordinate: ParsedCoordinate? = nil
+    @State private var nearestRoadName: String? = nil
+
+    private let sampleCoordinates = [
+        ("Chợ Bến Thành", "10.7725, 106.6980"),
+        ("Sân bay Tân Sơn Nhất", "10.8184, 106.6588"),
+        ("Hồ Con Rùa", "10.7828, 106.6958"),
+        ("Nút giao Cao tốc Long Thành", "10.7937, 106.7570")
+    ]
+
+    public var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 16) {
+                    // 1. Ô NHẬP TOẠ ĐỘ
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Nhập toạ độ GPS:")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundColor(isDarkMode ? .white : .black)
+
+                        HStack(spacing: 8) {
+                            Image(systemName: "location.north.circle.fill")
+                                .foregroundColor(isDarkMode ? .cyan : .blue)
+                                .font(.title3)
+
+                            TextField("vd: 10.7769, 106.7009", text: $inputText)
+                                .font(.body)
+                                .foregroundColor(isDarkMode ? .white : .black)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+                                .onChange(of: inputText) { val in
+                                    evaluateInput(val)
+                                }
+
+                            if !inputText.isEmpty {
+                                Button(action: {
+                                    inputText = ""
+                                    parsedCoordinate = nil
+                                    nearestRoadName = nil
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                        }
+                        .padding(12)
+                        .background(isDarkMode ? Color(red: 0.12, green: 0.14, blue: 0.18) : Color(red: 0.95, green: 0.95, blue: 0.97))
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(parsedCoordinate != nil ? Color.green : (isDarkMode ? Color.white.opacity(0.15) : Color.black.opacity(0.1)), lineWidth: 1.5)
+                        )
+
+                        // NÚT DÁN TỪ BỘ NHỚ TẠM
+                        Button(action: {
+                            if let clip = UIPasteboard.general.string {
+                                inputText = clip
+                                evaluateInput(clip)
+                            }
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "doc.on.clipboard.fill")
+                                    .font(.subheadline)
+                                Text("Dán từ bộ nhớ tạm (Clipboard)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(isDarkMode ? Color.white.opacity(0.1) : Color.blue.opacity(0.08))
+                            .foregroundColor(isDarkMode ? .cyan : .blue)
+                            .cornerRadius(10)
+                        }
+                    }
+
+                    // 2. KẾT QUẢ PHÂN TÍCH TOẠ ĐỘ THỰC TẾ
+                    if let parsed = parsedCoordinate {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                                    .font(.subheadline)
+                                Text("Toạ độ hợp lệ")
+                                    .font(.subheadline)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.green)
+                                Spacer()
+                                Text(parsed.label ?? "GPS")
+                                    .font(.caption2)
+                                    .fontWeight(.bold)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.green.opacity(0.2))
+                                    .foregroundColor(.green)
+                                    .cornerRadius(4)
+                            }
+
+                            HStack {
+                                Text("Vĩ độ, Kinh độ:")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                Spacer()
+                                Text(parsed.formattedString)
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(isDarkMode ? .white : .black)
+                            }
+
+                            if let road = nearestRoadName {
+                                HStack {
+                                    Text("Đường gần nhất:")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                    Spacer()
+                                    Text(road)
+                                        .font(.caption)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(isDarkMode ? .cyan : .blue)
+                                }
+                            }
+
+                            // NÚT BẮT ĐẦU DẪN ĐƯỜNG
+                            Button(action: {
+                                startNavigation(with: parsed)
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "paperplane.fill")
+                                        .font(.headline)
+                                    Text("Bắt đầu Chỉ đường")
+                                        .font(.headline)
+                                        .fontWeight(.bold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 13)
+                                .background(LinearGradient(colors: [Color.green, Color(red: 0.0, green: 0.65, blue: 0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                                .shadow(color: Color.green.opacity(0.4), radius: 6, y: 3)
+                            }
+                            .padding(.top, 4)
+                        }
+                        .padding(14)
+                        .background(isDarkMode ? Color(red: 0.1, green: 0.15, blue: 0.12) : Color(red: 0.94, green: 0.98, blue: 0.94))
+                        .cornerRadius(14)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.green.opacity(0.5), lineWidth: 1.2)
+                        )
+                    } else if !inputText.isEmpty {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                            Text("Chưa nhận dạng được toạ độ. Vui lòng nhập định dạng: 10.7769, 106.7009 hoặc độ phút giây.")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.orange.opacity(0.12))
+                        .cornerRadius(10)
+                    }
+
+                    // 3. TOẠ ĐỘ MẪU ĐỂ CHỌN NHANH
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Điểm đến mẫu (Nhấn để chọn):")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(.gray)
+
+                        ForEach(sampleCoordinates, id: \.0) { sample in
+                            Button(action: {
+                                inputText = sample.1
+                                evaluateInput(sample.1)
+                            }) {
+                                HStack {
+                                    Image(systemName: "mappin.and.ellipse")
+                                        .foregroundColor(isDarkMode ? .cyan : .blue)
+                                        .font(.caption)
+                                    Text(sample.0)
+                                        .font(.subheadline)
+                                        .foregroundColor(isDarkMode ? .white : .black)
+                                    Spacer()
+                                    Text(sample.1)
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(isDarkMode ? Color.white.opacity(0.06) : Color.black.opacity(0.04))
+                                .cornerRadius(8)
+                            }
+                        }
+                    }
+
+                    // 4. HƯỚNG DẪN LẤY TOẠ ĐỘ TỪ GOOGLE MAPS
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("💡 Mẹo lấy toạ độ từ Google Maps (Miễn phí 100%):")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(isDarkMode ? .yellow : Color(red: 0.8, green: 0.5, blue: 0.0))
+
+                        Text("1. Mở ứng dụng Google Maps trên điện thoại.\n2. Nhấn giữ vào bất kỳ điểm nào bạn muốn đến.\n3. Nhấn vào dãy toạ độ hiện lên (vd: 10.776889, 106.700806) để Sao chép.\n4. Mở VietSpeed và bấm \"Dán từ bộ nhớ tạm\".")
+                            .font(.caption2)
+                            .foregroundColor(isDarkMode ? Color.white.opacity(0.7) : Color.black.opacity(0.7))
+                            .lineSpacing(3)
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(isDarkMode ? Color(red: 0.14, green: 0.13, blue: 0.08) : Color(red: 1.0, green: 0.98, blue: 0.92))
+                    .cornerRadius(10)
+                }
+                .padding(16)
+            }
+            .background(isDarkMode ? Color(red: 0.08, green: 0.09, blue: 0.12).ignoresSafeArea() : Color(red: 0.97, green: 0.97, blue: 0.98).ignoresSafeArea())
+            .navigationTitle("Nhập Toạ độ GPS")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Đóng") {
+                        isPresented = false
+                    }
+                    .foregroundColor(isDarkMode ? .cyan : .blue)
+                    .fontWeight(.bold)
+                }
+            }
+            .onAppear {
+                if let clip = UIPasteboard.general.string, CoordinateParser.shared.parse(clip) != nil {
+                    inputText = clip
+                    evaluateInput(clip)
+                }
+            }
+        }
+    }
+
+    private func evaluateInput(_ text: String) {
+        if let parsed = CoordinateParser.shared.parse(text) {
+            self.parsedCoordinate = parsed
+            let road = DatabaseManager.shared.findNearestRoad(lat: parsed.coordinate.latitude, lon: parsed.coordinate.longitude)
+            self.nearestRoadName = road?.name
         } else {
-            showClipboardBanner = false
-            clipboardLink = nil
+            self.parsedCoordinate = nil
+            self.nearestRoadName = nil
+        }
+    }
+
+    private func startNavigation(with parsed: ParsedCoordinate) {
+        let startCoord = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
+        navManager.navigateToCoordinate(coordinate: parsed.coordinate, customTitle: nearestRoadName, startCoord: startCoord) { success in
+            if success {
+                isPresented = false
+            }
         }
     }
 }

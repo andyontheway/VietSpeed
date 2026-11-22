@@ -26,6 +26,7 @@
 		EF1359B639C46AF5D81B973C /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433AC355CE8512DAF0948F55 /* DatabaseManager.swift */; };
 		F6D0F2F14BD425FC138CF850 /* NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483CE54701540F1B4577853B /* NavigationManager.swift */; };
 		F944E7F375A5A0E12134A379 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1569C6A5546B8EEF210A7F9F /* AppSettings.swift */; };
+		FC207B3BC6E3C40BABC69D16 /* CoordinateParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB080FA80E0D929930BA5F51 /* CoordinateParser.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +70,7 @@
 		899EE638F7BD3AAF54CDFBF6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8D085EBE280C373A4EA75611 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A97502B8FF5A222C469CBE6F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AB080FA80E0D929930BA5F51 /* CoordinateParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateParser.swift; sourceTree = "<group>"; };
 		B6A8E7F111748E296DED3E29 /* VoiceAlertManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAlertManager.swift; sourceTree = "<group>"; };
 		BF9D6D34FDEBFE5AED4036C4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C55F3B21663AE0BFB9D2ABD8 /* VietmapNavigationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietmapNavigationScreen.swift; sourceTree = "<group>"; };
@@ -116,6 +118,7 @@
 		7D006187C474A74F8BB36082 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				AB080FA80E0D929930BA5F51 /* CoordinateParser.swift */,
 				433AC355CE8512DAF0948F55 /* DatabaseManager.swift */,
 				CCE8AE113D33B99455322D4A /* GoogleMapsLinkResolver.swift */,
 				483CE54701540F1B4577853B /* NavigationManager.swift */,
@@ -272,6 +275,7 @@
 			files = (
 				F944E7F375A5A0E12134A379 /* AppSettings.swift in Sources */,
 				93B42E792D587AEFD06F6D31 /* ContentView.swift in Sources */,
+				FC207B3BC6E3C40BABC69D16 /* CoordinateParser.swift in Sources */,
 				EF1359B639C46AF5D81B973C /* DatabaseManager.swift in Sources */,
 				7498C683A65EA27F6A2856ED /* GoogleMapsLinkResolver.swift in Sources */,
 				F6D0F2F14BD425FC138CF850 /* NavigationManager.swift in Sources */,
