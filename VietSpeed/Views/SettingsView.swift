@@ -5,6 +5,7 @@ public struct SettingsView: View {
 
     // Lưu các cấu hình vào bộ nhớ máy (UserDefaults) để giữ nguyên sau khi tắt app
     @AppStorage("is_dark_mode") private var isDarkMode: Bool = true
+    @AppStorage("google_maps_api_key") private var googleApiKey: String = ""
     @AppStorage("selected_vehicle") private var selectedVehicleRaw: String = VehicleType.car.rawValue
     @AppStorage("speed_tolerance") private var speedTolerance: Int = 0 // Dung sai vượt quá: 0, 5, 10 km/h
     @AppStorage("voice_alert_enabled") private var voiceAlertEnabled: Bool = true
@@ -38,6 +39,43 @@ public struct SettingsView: View {
                         }.tag(false)
                     }
                     .pickerStyle(.inline)
+                }
+
+                // 0.1 CẤU HÌNH GOOGLE PLACES API (TÌM ĐỊA ĐIỂM VIỆT NAM)
+                Section(
+                    header: Label("Tìm kiếm Google Places", systemImage: "globe.asia.australia.fill"),
+                    footer: Text(googleApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?
+                        "Chưa nhập Key: Đang dùng Apple Maps. Dán Google API Key để tìm kiếm chính xác từng quán ăn, cây xăng, địa chỉ ngõ hẻm tại Việt Nam." :
+                        "🟢 Đang kích hoạt tìm kiếm địa điểm thông minh bằng Google Places API.")
+                ) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("Google API Key:")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            Spacer()
+                            if !googleApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text("Đã kích hoạt")
+                                    .font(.caption2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.green)
+                            }
+                        }
+
+                        SecureField("Dán Google Places API Key vào đây...", text: $googleApiKey)
+                            .textFieldStyle(.roundedBorder)
+                            .autocapitalization(.none)
+                            .disableAutocorrection(true)
+                    }
+
+                    Link(destination: URL(string: "https://console.cloud.google.com/google/maps-apis")!) {
+                        HStack {
+                            Image(systemName: "arrow.up.right.square")
+                            Text("Lấy Google API Key miễn phí ($200/tháng)")
+                        }
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                    }
                 }
 
                 // 1. CHỌN LOẠI PHƯƠNG TIỆN (Quan trọng theo luật giao thông VN)

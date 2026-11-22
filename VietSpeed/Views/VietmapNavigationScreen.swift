@@ -65,7 +65,7 @@ public struct VietmapNavigationScreen: View {
     private var topHeaderSection: some View {
         if navManager.isNavigating {
             // BANNER CHỈ DẪN LỘ TRÌNH (TURN-BY-TURN CARD) - CHUẨN TƯƠNG PHẢN CAO
-            VStack(spacing: 0) {
+            VStack(spacing: 6) {
                 HStack(spacing: 12) {
                     // Biểu tượng rẽ hướng tiếp theo
                     ZStack {
@@ -122,17 +122,30 @@ public struct VietmapNavigationScreen: View {
 
                     Spacer()
 
-                    // Nút huỷ lộ trình dẫn đường
-                    Button(action: {
-                        navManager.stopNavigation()
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundColor(isDarkMode ? Color.white.opacity(0.65) : Color.black.opacity(0.45))
+                    VStack(spacing: 6) {
+                        // Nút huỷ lộ trình dẫn đường
+                        Button(action: {
+                            navManager.stopNavigation()
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 26))
+                                .foregroundColor(isDarkMode ? Color.white.opacity(0.65) : Color.black.opacity(0.45))
+                        }
+
+                        // Nút mở sang Google Maps chính thức nếu muốn
+                        if let destCoord = navManager.destinationCoordinate {
+                            Button(action: {
+                                NavigationManager.openInGoogleMapsApp(destinationCoord: destCoord, destinationName: navManager.destinationTitle)
+                            }) {
+                                Image(systemName: "arrow.up.right.square.fill")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(isDarkMode ? .cyan : .blue)
+                            }
+                        }
                     }
                 }
                 .padding(.horizontal, 14)
-                .padding(.vertical, 12)
+                .padding(.vertical, 11)
                 .background(
                     RoundedRectangle(cornerRadius: 18)
                         .fill(isDarkMode ? Color(red: 0.09, green: 0.11, blue: 0.15).opacity(0.96) : Color.white.opacity(0.97))
@@ -151,7 +164,7 @@ public struct VietmapNavigationScreen: View {
                         .foregroundColor(isDarkMode ? .cyan : .blue)
                         .font(.system(size: 16, weight: .bold))
 
-                    TextField("Tìm điểm đến (Sân bay, Bến Thành...)", text: $searchQuery)
+                    TextField(navManager.activeSearchEngine == "Google" ? "Tìm bằng Google Places (Quán ăn, ngõ hẻm...)" : "Tìm điểm đến...", text: $searchQuery)
                         .foregroundColor(isDarkMode ? .white : .black)
                         .font(.subheadline)
                         .autocapitalization(.none)
@@ -160,6 +173,16 @@ public struct VietmapNavigationScreen: View {
                             let loc = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
                             navManager.searchPlaces(query: query, userLocation: loc)
                         }
+
+                    if navManager.activeSearchEngine == "Google" {
+                        Text("Google")
+                            .font(.system(size: 8, weight: .black))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.2))
+                            .foregroundColor(.blue)
+                            .cornerRadius(4)
+                    }
 
                     if !searchQuery.isEmpty {
                         Button(action: {
@@ -229,19 +252,31 @@ public struct VietmapNavigationScreen: View {
                             startNavigatingTo(item: item)
                         }) {
                             HStack(spacing: 12) {
-                                Image(systemName: "car.circle.fill")
+                                Image(systemName: item.isGooglePlace ? "mappin.and.ellipse" : "car.circle.fill")
                                     .font(.title2)
-                                    .foregroundColor(isDarkMode ? .cyan : .blue)
+                                    .foregroundColor(item.isGooglePlace ? .red : (isDarkMode ? .cyan : .blue))
 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(item.name ?? "Điểm đến")
-                                        .font(.subheadline)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(isDarkMode ? .white : .black)
-                                        .lineLimit(1)
+                                    HStack(spacing: 4) {
+                                        Text(item.title)
+                                            .font(.subheadline)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(isDarkMode ? .white : .black)
+                                            .lineLimit(1)
 
-                                    if let title = item.placemark.title {
-                                        Text(title)
+                                        if item.isGooglePlace {
+                                            Text("Google")
+                                                .font(.system(size: 8, weight: .heavy))
+                                                .padding(.horizontal, 4)
+                                                .padding(.vertical, 1)
+                                                .background(Color.blue.opacity(0.15))
+                                                .foregroundColor(.blue)
+                                                .cornerRadius(3)
+                                        }
+                                    }
+
+                                    if !item.subtitle.isEmpty {
+                                        Text(item.subtitle)
                                             .font(.caption2)
                                             .foregroundColor(isDarkMode ? .gray : Color(red: 0.4, green: 0.42, blue: 0.45))
                                             .lineLimit(1)
@@ -472,10 +507,10 @@ public struct VietmapNavigationScreen: View {
     }
 
     // MARK: - KHỞI TẠO LỘ TRÌNH DẪN ĐƯỜNG
-    private func startNavigatingTo(item: MKMapItem) {
+    private func startNavigatingTo(item: PlaceSearchResult) {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         let startCoord = tracker.lastCoordinate ?? CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009)
-        navManager.calculateRoute(from: startCoord, to: item) { success in
+        navManager.navigateTo(item: item, startCoord: startCoord) { success in
             if success {
                 searchQuery = ""
                 recenterTrigger += 1

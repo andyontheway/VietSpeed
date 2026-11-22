@@ -2,15 +2,37 @@ import Foundation
 import MapKit
 import Combine
 import CoreLocation
+import UIKit
+
+// MARK: - MÔ HÌNH KẾT QUẢ TÌM KIẾM HỢP NHẤT (GOOGLE PLACES + APPLE MAPS)
+public struct PlaceSearchResult: Identifiable, Hashable {
+    public let id: String
+    public let title: String
+    public let subtitle: String
+    public let isGooglePlace: Bool
+    public let googlePlaceId: String?
+    public let mapItem: MKMapItem?
+
+    public init(id: String, title: String, subtitle: String, isGooglePlace: Bool, googlePlaceId: String?, mapItem: MKMapItem?) {
+        self.id = id
+        self.title = title
+        self.subtitle = subtitle
+        self.isGooglePlace = isGooglePlace
+        self.googlePlaceId = googlePlaceId
+        self.mapItem = mapItem
+    }
+}
 
 public final class NavigationManager: NSObject, ObservableObject {
     public static let shared = NavigationManager()
 
-    @Published public var searchResults: [MKMapItem] = []
+    @Published public var searchResults: [PlaceSearchResult] = []
     @Published public var isSearching: Bool = false
+    @Published public var activeSearchEngine: String = "Apple" // "Google" hoặc "Apple"
     @Published public var activeRoute: MKRoute? = nil
     @Published public var isNavigating: Bool = false
     @Published public var destinationTitle: String? = nil
+    @Published public var destinationCoordinate: CLLocationCoordinate2D? = nil
     @Published public var remainingDistance: String = ""
     @Published public var remainingTime: String = ""
     @Published public var nextInstruction: String = ""
@@ -24,38 +46,102 @@ public final class NavigationManager: NSObject, ObservableObject {
         super.init()
     }
 
-    /// Tìm kiếm địa điểm bằng Apple MapKit
+    /// Tìm kiếm địa điểm (Tự động ưu tiên Google Places nếu đã có API Key, fallback Apple Maps)
     public func searchPlaces(query: String, userLocation: CLLocationCoordinate2D? = nil) {
         currentSearch?.cancel()
         currentSearch = nil
 
-        guard !query.trimmingCharacters(in: .whitespaces).isEmpty else {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
             searchResults = []
             isSearching = false
             return
         }
 
-        isSearching = true
-        let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = query
-        request.resultTypes = [.pointOfInterest, .address]
+        let apiKey = UserDefaults.standard.string(forKey: "google_maps_api_key")?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
-        if let loc = userLocation {
-            request.region = MKCoordinateRegion(
-                center: loc,
-                latitudinalMeters: 50_000,
-                longitudinalMeters: 50_000
-            )
-        }
+        if !apiKey.isEmpty {
+            // 🌟 1. TÌM KIẾM BẰNG GOOGLE PLACES API (Toàn bộ quán ăn, toà nhà, ngõ hẻm Việt Nam)
+            activeSearchEngine = "Google"
+            isSearching = true
 
-        let search = MKLocalSearch(request: request)
-        currentSearch = search
-        search.start { [weak self] response, error in
-            DispatchQueue.main.async {
-                self?.isSearching = false
-                guard let self = self, let response = response else { return }
-                self.searchResults = response.mapItems
+            GooglePlacesService.shared.searchAutocomplete(
+                query: trimmed,
+                apiKey: apiKey,
+                userLocation: userLocation
+            ) { [weak self] items in
+                guard let self = self else { return }
+                self.isSearching = false
+                self.searchResults = items.map {
+                    PlaceSearchResult(
+                        id: $0.id,
+                        title: $0.title,
+                        subtitle: $0.subtitle,
+                        isGooglePlace: true,
+                        googlePlaceId: $0.id,
+                        mapItem: nil
+                    )
+                }
             }
+        } else {
+            // 🍏 2. TÌM KIẾM MẶC ĐỊNH BẰNG APPLE MAPKIT (Nếu chưa cấu hình API Key)
+            activeSearchEngine = "Apple"
+            isSearching = true
+            let request = MKLocalSearch.Request()
+            request.naturalLanguageQuery = trimmed
+            request.resultTypes = [.pointOfInterest, .address]
+
+            if let loc = userLocation {
+                request.region = MKCoordinateRegion(
+                    center: loc,
+                    latitudinalMeters: 50_000,
+                    longitudinalMeters: 50_000
+                )
+            }
+
+            let search = MKLocalSearch(request: request)
+            currentSearch = search
+            search.start { [weak self] response, error in
+                DispatchQueue.main.async {
+                    self?.isSearching = false
+                    guard let self = self, let response = response else { return }
+                    self.searchResults = response.mapItems.map { item in
+                        PlaceSearchResult(
+                            id: "\(item.placemark.coordinate.latitude),\(item.placemark.coordinate.longitude)",
+                            title: item.name ?? "Điểm đến",
+                            subtitle: item.placemark.title ?? "",
+                            isGooglePlace: false,
+                            googlePlaceId: nil,
+                            mapItem: item
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /// Khởi chạy dẫn đường từ kết quả tìm kiếm (hỗ trợ cả Google Place và Apple MapItem)
+    public func navigateTo(
+        item: PlaceSearchResult,
+        startCoord: CLLocationCoordinate2D,
+        completion: ((Bool) -> Void)? = nil
+    ) {
+        if item.isGooglePlace, let placeId = item.googlePlaceId {
+            let apiKey = UserDefaults.standard.string(forKey: "google_maps_api_key")?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            GooglePlacesService.shared.fetchPlaceLocation(placeId: placeId, apiKey: apiKey) { [weak self] coord, name in
+                guard let self = self, let coord = coord else {
+                    completion?(false)
+                    return
+                }
+                let placemark = MKPlacemark(coordinate: coord)
+                let mapItem = MKMapItem(placemark: placemark)
+                mapItem.name = name ?? item.title
+                self.destinationCoordinate = coord
+                self.calculateRoute(from: startCoord, to: mapItem, completion: completion)
+            }
+        } else if let mapItem = item.mapItem {
+            self.destinationCoordinate = mapItem.placemark.coordinate
+            self.calculateRoute(from: startCoord, to: mapItem, completion: completion)
         }
     }
 
@@ -78,6 +164,7 @@ public final class NavigationManager: NSObject, ObservableObject {
 
                 self.activeRoute = route
                 self.destinationTitle = destinationItem.name ?? "Điểm đến"
+                self.destinationCoordinate = destinationItem.placemark.coordinate
                 self.updateRouteMetrics(route: route)
                 self.isNavigating = true
                 self.searchResults = []
@@ -147,9 +234,24 @@ public final class NavigationManager: NSObject, ObservableObject {
         activeRoute = nil
         isNavigating = false
         destinationTitle = nil
+        destinationCoordinate = nil
         remainingDistance = ""
         remainingTime = ""
         nextInstruction = ""
         VoiceAlertManager.shared.speak(key: "stop_nav", message: "Đã kết thúc chỉ đường.", cooldownSeconds: 2.0)
+    }
+
+    /// Mở địa điểm / lộ trình trực tiếp sang ứng dụng Google Maps chính thức
+    public static func openInGoogleMapsApp(destinationCoord: CLLocationCoordinate2D, destinationName: String?) {
+        let lat = destinationCoord.latitude
+        let lon = destinationCoord.longitude
+        let appUrl = URL(string: "comgooglemaps://?daddr=\(lat),\(lon)&directionsmode=driving")
+        let webUrl = URL(string: "https://www.google.com/maps/dir/?api=1&destination=\(lat),\(lon)")
+
+        if let appUrl = appUrl, UIApplication.shared.canOpenURL(appUrl) {
+            UIApplication.shared.open(appUrl)
+        } else if let webUrl = webUrl {
+            UIApplication.shared.open(webUrl)
+        }
     }
 }

@@ -23,6 +23,7 @@
 		E8E8ED1CB3A96AEC43D4F5F3 /* SpeedWidgetAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B4A6D6733143B6A37C8B8BB /* SpeedWidgetAttributes.swift */; };
 		E9310E416FCAD69C6958A395 /* SpeedWidgetAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051924B637A851FEFEF5A903 /* SpeedWidgetAttributes.swift */; };
 		EF1359B639C46AF5D81B973C /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433AC355CE8512DAF0948F55 /* DatabaseManager.swift */; };
+		F3FAEFB217761D4499D19C78 /* GooglePlacesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F620575D01235C07F08AA4B /* GooglePlacesService.swift */; };
 		F6D0F2F14BD425FC138CF850 /* NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483CE54701540F1B4577853B /* NavigationManager.swift */; };
 		F944E7F375A5A0E12134A379 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1569C6A5546B8EEF210A7F9F /* AppSettings.swift */; };
 /* End PBXBuildFile section */
@@ -55,6 +56,7 @@
 		051924B637A851FEFEF5A903 /* SpeedWidgetAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedWidgetAttributes.swift; sourceTree = "<group>"; };
 		05DCFB2C7B6FC42EE62C1C58 /* VietmapMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VietmapMapView.swift; sourceTree = "<group>"; };
 		0A77C0A938C0048709561F87 /* DrivingSimulation.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DrivingSimulation.gpx; sourceTree = "<group>"; };
+		0F620575D01235C07F08AA4B /* GooglePlacesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GooglePlacesService.swift; sourceTree = "<group>"; };
 		1569C6A5546B8EEF210A7F9F /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		1AA6B59DFC0AD276B29DE3B8 /* VietSpeedWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = VietSpeedWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2203AFB31F0D8C98BCB58D54 /* VietSpeed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VietSpeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				433AC355CE8512DAF0948F55 /* DatabaseManager.swift */,
+				0F620575D01235C07F08AA4B /* GooglePlacesService.swift */,
 				483CE54701540F1B4577853B /* NavigationManager.swift */,
 				E83C996955E8E93EFBDFCD18 /* SpeedTracker.swift */,
 				B6A8E7F111748E296DED3E29 /* VoiceAlertManager.swift */,
@@ -270,6 +273,7 @@
 				F944E7F375A5A0E12134A379 /* AppSettings.swift in Sources */,
 				93B42E792D587AEFD06F6D31 /* ContentView.swift in Sources */,
 				EF1359B639C46AF5D81B973C /* DatabaseManager.swift in Sources */,
+				F3FAEFB217761D4499D19C78 /* GooglePlacesService.swift in Sources */,
 				F6D0F2F14BD425FC138CF850 /* NavigationManager.swift in Sources */,
 				33491A9C57367EEEE8BBC84F /* RoadInfo.swift in Sources */,
 				2EF2FE3B949468444BC33489 /* SettingsView.swift in Sources */,
